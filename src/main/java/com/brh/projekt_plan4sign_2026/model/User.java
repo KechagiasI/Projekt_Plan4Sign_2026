@@ -20,7 +20,7 @@ public class User {
     public int getUserID() { return userID; }
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
-    public Role role() { return role; }
+    public Role getRole() { return role; }
 
     // Setters
     public void setUserID(int userID){ this.userID = userID; }
