@@ -404,11 +404,15 @@ Zeitblockierungen eines Dolmetschers.
 ## Ziel der Woche
 
 
+# Dokumentation – Woche 3
+
+## Ziel der Woche
+
 ## 3. Technisches Konzept
 
 ### 3.1 Architekturentscheidung
 
-Für die Umsetzung der Anwendung **„DoIT – Planungs- und Organisationssoftware“** wurde die  
+Für die Umsetzung der Anwendung **„DoIT – Planungs- und Organisationssoftware"** wurde die  
 **Model-View-Controller (MVC)-Architektur** gewählt.
 
 #### Begründung
@@ -435,3 +439,202 @@ Die MVC-Architektur bietet:
 - IHK-konforme Projektstruktur
 
 ---
+
+### 3.2 Package-Struktur
+
+Die Anwendung ist in folgende Packages unterteilt:
+
+```
+src/main/java/com/brh/
+│
+├── model/       ← Entity-Klassen (User, Dolmetscher, usw.)
+├── view/        ← FXML-Controller (JavaFX-Oberfläche)
+├── controller/  ← Anwendungslogik
+├── dao/         ← Datenbankzugriff (JDBC)
+└── util/        ← Hilfsmittel (z. B. DatabaseConnection)
+```
+
+#### Begründung
+
+Die Aufteilung in Packages entspricht der MVC-Architektur und sorgt für eine klare Trennung der Verantwortlichkeiten:
+
+- `model` enthält ausschließlich die Datenstruktur
+- `view` enthält ausschließlich die Benutzeroberfläche
+- `controller` enthält die Anwendungslogik
+- `dao` enthält den gesamten Datenbankzugriff
+- `util` enthält gemeinsam genutzte Hilfsmittel
+
+---
+
+### 3.3 Entity-Klassen
+
+Für jede Entität des ER-Modells wurde eine entsprechende Java-Klasse im Package `model` erstellt.
+
+#### Role.java
+
+Enum-Klasse zur Abbildung der Benutzerrollen.  
+Entspricht dem `ENUM`-Typ in der Datenbanktabelle `User`.
+
+```
+Werte: ADMIN, DOLMETSCHER, TEILNEHMER
+```
+
+> **Entscheidung:** Anstelle eines `String`-Feldes wurde ein Java `enum` verwendet,
+> da dieser direkt dem MySQL ENUM entspricht und ungültige Werte zur Kompilierzeit verhindert.
+
+---
+
+#### User.java
+
+Speichert Login-Daten und Rolleninformationen.
+
+Attribute:
+
+- `int userID`
+- `String username`
+- `String passwordHash`
+- `Role role`
+
+---
+
+#### Bereich.java
+
+Repräsentiert einen fachlichen Bereich.
+
+Attribute:
+
+- `int bereichID`
+- `String bereichName`
+
+---
+
+#### Fach.java
+
+Repräsentiert ein konkretes Unterrichtsfach.
+
+Attribute:
+
+- `int fachID`
+- `String fachName`
+- `boolean isInterpreterRelevant`
+- `int bereichID`
+
+> **Entscheidung:** Das Attribut `bereichID` wird als `int` gespeichert (Foreign Key),
+> nicht als `Bereich`-Objekt. Die Daten werden über JDBC geladen,
+> daher wird auf Objekt-Referenzen verzichtet.
+
+---
+
+#### Klasse.java
+
+Repräsentiert eine Schulklasse.
+
+Attribute:
+
+- `int klasseID`
+- `String klasseName`
+- `String room`
+
+---
+
+#### Teilnehmer.java
+
+Repräsentiert einen hörgeschädigten Teilnehmer.
+
+Attribute:
+
+- `int teilnehmerID`
+- `String firstName`
+- `String lastName`
+- `String email`
+- `String mobilePhone`
+- `String comment`
+- `int klasseID`
+- `int userID`
+
+---
+
+#### Dolmetscher.java
+
+Repräsentiert einen Dolmetscher.
+
+Attribute:
+
+- `int dolmetscherID`
+- `String firstName`
+- `String lastName`
+- `String email`
+- `String mobilePhone`
+- `String comment`
+- `int userID`
+
+---
+
+#### Unterricht.java
+
+Repräsentiert eine einzelne Unterrichtseinheit.
+
+Attribute:
+
+- `int unterrichtID`
+- `LocalDate date`
+- `LocalTime startTime`
+- `LocalTime endTime`
+- `int klasseID`
+- `int fachID`
+- `Integer dolmetscherID`
+
+> **Entscheidung:** `dolmetscherID` ist vom Typ `Integer` (nicht `int`),
+> da der Wert `NULL` sein kann, wenn kein Dolmetscher zugewiesen ist.
+
+> **Entscheidung:** `LocalDate` und `LocalTime` wurden anstelle von `java.sql.Date`
+> und `java.sql.Time` verwendet, da diese modernen Typen seit Java 8 empfohlen werden
+> und keine automatische Konvertierung der Datumswerte vornehmen.
+
+---
+
+#### Availability.java
+
+Speichert Zeitblockierungen eines Dolmetschers.
+
+Attribute:
+
+- `int availabilityID`
+- `String availabilityType`
+- `LocalDate date`
+- `LocalTime startTime`
+- `LocalTime endTime`
+- `LocalDate dateFrom`
+- `LocalDate dateTo`
+- `String comment`
+- `int dolmetscherID`
+
+> **Entscheidung:** Alle optionalen Datums- und Zeitfelder sind als `LocalDate` bzw.
+> `LocalTime` deklariert und können `null` sein, entsprechend der Datenbankdefinition.
+
+---
+
+### 3.4 Versionsverwaltung
+
+Das Projekt wurde mit einem privaten GitHub-Repository verknüpft.
+
+- Lokales Git-Repository war bereits beim Erstellen des Projekts initialisiert
+- Remote-Repository wurde auf GitHub unter dem Namen `Projekt_Plan4Sign_2026` erstellt
+- Verbindung wurde über IntelliJ IDEA (`Git → Manage Remotes`) hergestellt
+- Erster Push mit dem Commit `Initial commit - Add model entities` erfolgreich durchgeführt
+
+---
+
+## Status
+**Woche 3: in Bearbeitung ⏳**
+
+Abgeschlossen:
+- ✅ Architekturentscheidung (MVC)
+- ✅ Package-Struktur
+- ✅ Entity-Klassen
+- ✅ GitHub-Anbindung
+
+Offen:
+- ⏳ JDBC-Datenbankanbindung (`util/DatabaseConnection.java`)
+- ⏳ Implementierung der DAO-Klassen
+- ⏳ Test der Datenbankverbindung
