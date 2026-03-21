@@ -1,36 +1,41 @@
 package com.brh.projekt_plan4sign_2026.util;
 
-import java.sql.Connection;     // Connection mit DATABASE
-import java.sql.DriverManager;  // Er öffnet die Connection
-import java.sql.SQLException;   // Error in SQL
+import java.sql.Connection;     // Repräsentiert eine Verbindung zur Datenbank
+import java.sql.DriverManager;  // Erstellt/vermittelt die Verbindung zur Datenbank
+import java.sql.SQLException;   // Ausnahme bei Datenbankfehlern
 
 public class DatabaseConnection {
 
-    // Adresse der Datenbank(localhost = lokaler Rechner, 3306 = Standard-MySQL-Port)
+    // JDBC-URL: mysql = Treiber, localhost = Server, 3324 = Port, projekt_doit = Datenbankname
+    // (Standard-Port ist 3306 -> prüfen, ob 3324 korrekt ist)
     private static final String URL = "jdbc:mysql://localhost:3324/projekt_doit";
-    // Benutzername für die MySQL-Datenbank
+    // Datenbank-Benutzername
     private static final String USER = "root";
-    // Passwort für die MySQL-Datenbank
+    // Datenbank-Passwort (Hinweis: in echten Projekten nicht im Code speichern!)
     private static final String PASSWORD = "1234";
-    // Einzelne Verbindungsinstanz (Singleton-Prinzip - existiert nur eine Verbindung)
+    // Singleton-Verbindung: Es existiert nur eine Connection im gesamten Programm
     private static Connection connection = null;
-    // Privater Konstruktor - verhindert, dass die Klasse von außen instanziiert werden kann
+    // Privater Konstruktor verhindert Instanziierung (Utility-/Singleton-Klasse)
     private DatabaseConnection() {}
-    // Gibt die aktuelle Verbindung zurück - erstellt sie, falls sie noch nicht existiert
+    // Liefert eine gültige Connection zurück (erstellt sie nur, wenn nötig)
     public static Connection getConnection() throws SQLException {
+        // Falls noch keine Verbindung existiert oder sie geschlossen wurde → neue erstellen
         if(connection == null || connection.isClosed()) {
-            // Verbindung zur Datenbank wird hergestellt
+            // Aufbau der Verbindung zur MySQL-Datenbank
             connection = DriverManager.getConnection(URL, USER, PASSWORD);
         }
+        // Rückgabe der bestehenden oder neu erstellten Verbindung
         return connection;
     }
-    // Schließt die Verbindung zur Datenbank
+    // Schließt die bestehende Datenbankverbindung sauber
     public static void closeConnection() {
         try {
+            // Nur schließen, wenn Verbindung existiert und noch offen ist
             if(connection != null && !connection.isClosed()) {
                 connection.close();
             }
         } catch (SQLException e) {
+            // Fehlerausgabe (für Debugging; in echten Projekten Logging verwenden)
             e.printStackTrace();
         }
     }
