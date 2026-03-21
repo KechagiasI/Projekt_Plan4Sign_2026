@@ -30,7 +30,6 @@ public class Availability {
         this.dolmetscherID = DolmetscherID;
 
     }
-
     // Getters
     public int getAvailabilityID() { return availabilityID; }
     public String getAvailabilityType() { return availabilityType; }
@@ -41,7 +40,6 @@ public class Availability {
     public LocalTime getDateTo() { return dateTo; }
     public String getComment() { return comment; }
     public int getDolmetscherID() { return dolmetscherID; }
-
     // Setters
     public void setAvailabilityID(int availabilityID) { this.availabilityID = availabilityID; }
     public void setAvailabilityType(String availabilityType) { this.availabilityType = availabilityType; }

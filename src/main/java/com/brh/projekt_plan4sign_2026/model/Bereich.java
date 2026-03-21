@@ -14,4 +14,8 @@ public class Bereich {
     // Getters
     public int getBereichID() {return bereichID;}
     public String bereichname() {return bereichname;}
+
+    // Setters
+    public void setBereichID(int bereichID) { this.bereichID = bereichID; }
+    public void setbereichname(String bereichname) { this.bereichname = bereichname; }
 }
