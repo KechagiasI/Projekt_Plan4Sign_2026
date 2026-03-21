@@ -625,12 +625,12 @@ Für die Verbindung zwischen Java und der MySQL-Datenbank wurde JDBC verwendet.
 
 Der MySQL JDBC-Treiber wurde als Maven-Dependency in der `pom.xml` eingebunden:
 
-```XML 
-&lt;dependency&gt;
-    &lt;groupId&gt;mysql&lt;/groupId&gt;
-    &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
-    &lt;version&gt;8.0.33&lt;/version&gt;
-&lt;/dependency&gt;
+```XML
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.33</version>
+</dependency>
 ```
 #### DatabaseConnection.java
 Die Klasse DatabaseConnection im Package util stellt die Verbindung zur Datenbank her.
@@ -650,6 +650,31 @@ Umgesetzte Konzepte:
 ```java
 Verbindung erfolgreich!
 ```
+
+`CODE in package util -> DatabaseConnection.java`
+
+```java
+import java.sql.Connection;
+......
+
+public class DatabaseConnection {
+
+    // JDBC-URL: mysql = Treiber, localhost = Server, 3324 = Port, projekt_doit = Datenbankname
+    // (Standard-Port ist 3306 -> prüfen, ob 3324 korrekt ist)
+    private static final String URL = "jdbc:mysql://localhost:3324/projekt_doit";
+    // Datenbank-Benutzername
+    private static final String USER = "root";
+    // Datenbank-Passwort (Hinweis: in echten Projekten nicht im Code speichern!)
+    private static final String PASSWORD = "1234";
+    // Singleton-Verbindung: Es existiert nur eine Connection im gesamten Programm
+    private static Connection connection = null;
+    // Privater Konstruktor verhindert Instanziierung (Utility-/Singleton-Klasse)
+    private DatabaseConnection() {}
+    
+    ...........
+
+```
+
 
 ### 3.5 DAO-Klassen
 Für jede Entität wurde eine DAO-Klasse (Data Access Object) im Package dao erstellt.
