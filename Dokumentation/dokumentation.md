@@ -635,6 +635,11 @@ Abgeschlossen:
 - ✅ GitHub-Anbindung
 
 Offen:
-- ⏳ JDBC-Datenbankanbindung (`util/DatabaseConnection.java`)
+- ⏳ JDBC-Datenbankanbindung (`util/DatabaseConnection.java`) 
+1. `https://mvnrepository.com/artifact/mysql/mysql-connector-java/8.0.33`
+2. `https://stackoverflow.com/questions/2839321/connect-java-to-a-mysql-database`
+3. `https://stackoverflow.com/questions/74183544/get-connection-with-singleton-pattern`
+4. `https://github.com/mysql/mysql-connector-j?utm_source=chatgpt.com`
+5. `https://dev.mysql.com/doc/connector-j/en/`
 - ⏳ Implementierung der DAO-Klassen
 - ⏳ Test der Datenbankverbindung
