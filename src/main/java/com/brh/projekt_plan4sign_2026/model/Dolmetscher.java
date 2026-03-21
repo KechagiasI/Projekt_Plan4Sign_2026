@@ -7,7 +7,7 @@ public class Dolmetscher {
     private String firstname;
     private String lastname;
     private String email;
-    private String mobilephone;
+    private String mobilePhone;
     private String comment;
     private int userID;
 
@@ -17,7 +17,7 @@ public class Dolmetscher {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
-        this.mobilephone = mobilephone;
+        this.mobilePhone = mobilephone;
         this.comment = comment;
         this.userID = userID;
     }
@@ -27,7 +27,7 @@ public class Dolmetscher {
     public String getFirstname() { return firstname; }
     public String getLastname() { return lastname; }
     public String getEmail() { return email; }
-    public String getMobilephone() { return mobilephone; }
+    public String getMobilePhone() { return mobilePhone; }
     public String getComment() { return comment; }
     public int getUserID() { return userID; }
 
@@ -36,7 +36,7 @@ public class Dolmetscher {
     public void setFistname(String fistname) { this.firstname = firstname; }
     public void setLastname(String lastname) { this.lastname = lastname; }
     public void setEmail(String email) { this.email = email; }
-    public void setMobilephone(String mobilephone) { this.mobilephone = mobilephone; }
+    public void setMobilePhone(String mobilePhone) { this.mobilePhone = mobilePhone; }
     public void setComment(String comment) { this.comment = comment; }
     public void setUserID(int userID) { this.userID = userID; }
 

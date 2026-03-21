@@ -13,12 +13,13 @@ public class Availability {
     private LocalTime startTime;
     private LocalTime endTime;
     private LocalDate dateFrom;
-    private LocalTime dateTo;
+    private LocalDate dateTo;
     private String comment;
     private int dolmetscherID;
 
     // Constructor
-    public Availability(int availabilityID, String availabilityType, LocalDate date, LocalTime startTime, LocalTime endTime, LocalDate dateFrom, LocalTime dateTo, String comment, int DolmetscherID) {
+    public Availability(int availabilityID, String availabilityType, LocalDate date, LocalTime startTime,
+                        LocalTime endTime, LocalDate dateFrom, LocalDate dateTo, String comment, int DolmetscherID) {
         this.availabilityID = availabilityID;
         this.availabilityType = availabilityType;
         this.date = date;
@@ -37,7 +38,7 @@ public class Availability {
     public LocalTime getStartTime() { return startTime; }
     public LocalTime getEndTime() { return endTime; }
     public LocalDate getDateFrom() { return dateFrom; }
-    public LocalTime getDateTo() { return dateTo; }
+    public LocalDate getDateTo() { return dateTo; }
     public String getComment() { return comment; }
     public int getDolmetscherID() { return dolmetscherID; }
     // Setters
@@ -47,7 +48,7 @@ public class Availability {
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public void setDateFrom(LocalDate dateFrom) { this.dateFrom = dateFrom; }
-    public void setDateTo(LocalTime dateTo) { this.dateTo = dateTo; }
+    public void setDateTo(LocalDate dateTo) { this.dateTo = dateTo; }
     public void setComment(String comment) { this.comment = comment; }
     public void setDolmetscherID(int dolmetscherID) { this.dolmetscherID = dolmetscherID; }
 }

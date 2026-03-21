@@ -47,7 +47,7 @@ public class BereichDAO {
         // PreparedStatement schützt vor SQL-Injection und setzt Werte sicher ein
         PreparedStatement statement = connection.prepareStatement(sql);
         // Setzt den Wert für den Platzhalter (1. Parameter)
-        statement.setString(1, bereich.getBereichname());
+        statement.setString(1, bereich.getBereichName());
         // Führt die Änderung in der Datenbank aus (INSERT, UPDATE, DELETE)
         statement.executeUpdate();
     }

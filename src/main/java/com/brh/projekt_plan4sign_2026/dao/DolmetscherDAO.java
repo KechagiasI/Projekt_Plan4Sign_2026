@@ -105,7 +105,7 @@ public class DolmetscherDAO {
         statement.setString(1, dolmetscher.getFirstname());
         statement.setString(2, dolmetscher.getLastname());
         statement.setString(3, dolmetscher.getEmail());
-        statement.setString(4, dolmetscher.getMobilephone());
+        statement.setString(4, dolmetscher.getMobilePhone());
         statement.setString(5, dolmetscher.getComment());
 
         // Fremdschlüssel setzen (User-Verbindung)

@@ -58,7 +58,7 @@ public class KlasseDAO {
         PreparedStatement statement = connection.prepareStatement(sql);
 
         // Setzt die Werte für die Platzhalter
-        statement.setString(1, klasse.getKlassename());
+        statement.setString(1, klasse.getKlasseName());
         statement.setString(2, klasse.getRoom());
 
         // Führt die Änderung in der Datenbank aus

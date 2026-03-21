@@ -13,7 +13,7 @@ public class Teilnehmer {
     private int userID;
 
     // Constructor
-    public Teilnehmer(int teilnehmerID,  String firstname, String lastname, String email, String mobilephone, String comment, int userID) {
+    public Teilnehmer(int teilnehmerID,  String firstname, String lastname, String email, String mobilephone, String comment, int klasseID, int userID) {
         this.teilnehmerID = teilnehmerID;
         this.firstname = firstname;
         this.lastname = lastname;
