@@ -403,10 +403,7 @@ Zeitblockierungen eines Dolmetschers.
 
 ## Ziel der Woche
 
-
-# Dokumentation – Woche 3
-
-## Ziel der Woche
+Abschluss der JDBC-Anbindung und Implementierung der DAO-Klassen sowie Stabilisierung der Modellklassen.
 
 ## 3. Technisches Konzept
 
@@ -458,13 +455,19 @@ src/main/java/com/brh/
 
 Die Aufteilung in Packages entspricht der MVC-Architektur und sorgt für eine klare Trennung der Verantwortlichkeiten:
 
-- `model` enthält ausschließlich die Datenstruktur
-- `view` enthält ausschließlich die Benutzeroberfläche
-- `controller` enthält die Anwendungslogik
-- `dao` enthält den gesamten Datenbankzugriff
-- `util` enthält gemeinsam genutzte Hilfsmittel
+- `model` Entity-Klassen (User, Dolmetscher, usw.)
+- `view` FXML-Controller (JavaFX-Oberfläche)
+- `controller` Anwendungslogik
+- `dao` Datenbankzugriff (JDBC)
+- `util` Hilfsmittel (z. B. DatabaseConnection)
 
 ---
+- model enthält ausschließlich die Datenstruktur
+- view enthält ausschließlich die Benutzeroberfläche
+- controller enthält die Anwendungslogik
+- dao enthält den gesamten Datenbankzugriff
+- util enthält gemeinsam genutzte Hilfsmittel
+
 
 ### 3.3 Entity-Klassen
 
@@ -614,32 +617,101 @@ Attribute:
 
 ---
 
-### 3.4 Versionsverwaltung
+### 3.4 JDBC-Datenbankanbindung
 
-Das Projekt wurde mit einem privaten GitHub-Repository verknüpft.
+Für die Verbindung zwischen Java und der MySQL-Datenbank wurde JDBC verwendet.
 
-- Lokales Git-Repository war bereits beim Erstellen des Projekts initialisiert
-- Remote-Repository wurde auf GitHub unter dem Namen `Projekt_Plan4Sign_2026` erstellt
-- Verbindung wurde über IntelliJ IDEA (`Git → Manage Remotes`) hergestellt
-- Erster Push mit dem Commit `Initial commit - Add model entities` erfolgreich durchgeführt
+#### MySQL Connector/J
+
+Der MySQL JDBC-Treiber wurde als Maven-Dependency in der `pom.xml` eingebunden:
+
+```XML 
+&lt;dependency&gt;
+    &lt;groupId&gt;mysql&lt;/groupId&gt;
+    &lt;artifactId&gt;mysql-connector-java&lt;/artifactId&gt;
+    &lt;version&gt;8.0.33&lt;/version&gt;
+&lt;/dependency&gt;
+```
+#### DatabaseConnection.java
+Die Klasse DatabaseConnection im Package util stellt die Verbindung zur Datenbank her.
+Umgesetzte Konzepte:
+
+- Singleton-Prinzip: Es existiert zu jedem Zeitpunkt nur eine einzige Datenbankverbindung
+- Privater Konstruktor: Verhindert die Instanziierung der Klasse von außen
+- getConnection() gibt die bestehende Verbindung zurück oder erstellt eine neue
+- closeConnection() schließt die Verbindung sicher
+
+#### Verbindungsparameter:
+
+- URL: jdbc:mysql://localhost:3324/projekt_doit
+- Port: 3324 (MySQL läuft unter WSL)
+- Datenbank: projekt_doit
+
+```java
+Verbindung erfolgreich!
+```
+
+### 3.5 DAO-Klassen
+Für jede Entität wurde eine DAO-Klasse (Data Access Object) im Package dao erstellt.
+Jede DAO-Klasse implementiert die grundlegenden CRUD-Operationen:
+
+- Create → INSERT (insert())
+- Read → SELECT (getAll(), getByID(), getByKlasse() usw.)
+- Update → UPDATE (assignDolmetscher())
+- Delete → DELETE (delete())
+
+### Übersicht der DAO-Klassen
+
+| DAO-Klasse       | Methoden                                                                             |
+|------------------|--------------------------------------------------------------------------------------|
+| BereichDAO       | getAll(), insert(), delete()                                                         |
+| KlasseDAO        | getAll(), insert(), delete()                                                         |
+| FachDAO          | getAll(), getByBereich(), insert(), delete()                                         |
+| UserDAO          | getAll(), getByUsername(), insert(), delete()                                        |
+| DolmetscherDAO   | getAll(), getByID(), insert(), delete()                                              |
+| TeilnehmerDAO    | getAll(), getByKlasse(), insert(), delete()                                          |
+| UnterrichtDAO    | getAll(), getByKlasse(), getByDolmetscher(), insert(), assignDolmetscher(), delete() |
+| AvailabilityDAO  | getByDolmetscher(), insert(), delete()                                               |
+
+
+> Entscheidung: PreparedStatement wurde anstelle von Statement verwendet,
+> wo Benutzereingaben in die SQL-Abfrage einfließen, um SQL-Injection zu verhindern.
+> Entscheidung: NULL-Werte werden mit getObject() geprüft bevor sie mit
+> toLocalDate() oder toLocalTime() konvertiert werden, um NullPointerExceptions zu vermeiden.
 
 ---
 
-## Status
-**Woche 3: in Bearbeitung ⏳**
+### 3.6 Versionsverwaltung
+Das Projekt wurde mit einem privaten GitHub-Repository verknüpft.
 
-Abgeschlossen:
-- ✅ Architekturentscheidung (MVC)
-- ✅ Package-Struktur
-- ✅ Entity-Klassen
-- ✅ GitHub-Anbindung
+- Lokales Git-Repository war bereits beim Erstellen des Projekts initialisiert
+- Remote-Repository wurde auf GitHub unter dem Namen Projekt_Plan4Sign_2026 erstellt
+- Verbindung wurde über IntelliJ IDEA (Git → Manage Remotes) hergestellt
 
-Offen:
-- ⏳ JDBC-Datenbankanbindung (`util/DatabaseConnection.java`) 
+Commits dieser Woche:
+
+- Initial commit - Add model entities
+- Add DatabaseConnection and DatabaseConnectionTest
+- Add BereichDAO with `getAll, insert, delete`
+- Fix model classes: `Fach, Unterricht, Availability - Add DAO classes`
+
+---
+#### Referenzen
 1. `https://mvnrepository.com/artifact/mysql/mysql-connector-java/8.0.33`
 2. `https://stackoverflow.com/questions/2839321/connect-java-to-a-mysql-database`
 3. `https://stackoverflow.com/questions/74183544/get-connection-with-singleton-pattern`
 4. `https://github.com/mysql/mysql-connector-j?utm_source=chatgpt.com`
 5. `https://dev.mysql.com/doc/connector-j/en/`
-- ⏳ Implementierung der DAO-Klassen
-- ⏳ Test der Datenbankverbindung
+---
+
+
+### Status
+#### Woche 3: abgeschlossen ✅
+
+- ✅ Architekturentscheidung (MVC)
+- ✅ Package-Struktur
+- ✅ Entity-Klassen
+- ✅ GitHub-Anbindung
+- ✅ JDBC-Datenbankanbindung
+- ✅ DAO-Klassen (CRUD)
+- ✅ Test der Datenbankverbindung
