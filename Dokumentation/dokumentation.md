@@ -740,3 +740,252 @@ Commits dieser Woche:
 - ✅ JDBC-Datenbankanbindung
 - ✅ DAO-Klassen (CRUD)
 - ✅ Test der Datenbankverbindung
+
+----
+# Dokumentation – Woche 4
+
+## 4. Woche 4 – Login-System, Rollennavigation & JavaFX-Oberfläche
+
+## Ziel der Woche
+
+Implementierung des Login-Systems mit sicherer Passwortverschlüsselung,
+rollenbasierter Navigation sowie Vorbereitung der JavaFX-Oberflächen.
+
+---
+
+### 4.1 Projektkonfiguration
+
+#### 4.1.1 pom.xml – Anpassungen
+
+Folgende Änderungen wurden an der `pom.xml` vorgenommen:
+
+**BCrypt-Dependency hinzugefügt:**
+```xml
+<dependency>
+    <groupId>org.mindrot</groupId>
+    <artifactId>jbcrypt</artifactId>
+    <version>0.4</version>
+</dependency>
+```
+
+> **Begründung:** Passwörter dürfen niemals im Klartext gespeichert werden.
+> BCrypt ist ein bewährter Hashing-Algorithmus mit automatischem Salt,
+> der speziell für Passwörter entwickelt wurde.
+
+**JavaFX-Version als Property zentralisiert:**
+```xml
+<properties>
+    <javafx.version>21.0.6</javafx.version>
+</properties>
+```
+
+> **Begründung:** Durch die Verwendung einer zentralen Property muss
+> die Version nur an einer Stelle gepflegt werden.
+
+**Java-Compiler-Version korrigiert:**
+```xml
+<source>21</source>
+<target>21</target>
+```
+
+> **Begründung:** Die Compiler-Version muss mit dem installierten JDK übereinstimmen.
+> Die vorherige Einstellung (23) führte zu Inkompatibilitäten.
+
+**mainClass im javafx-maven-plugin aktualisiert:**
+```xml
+<mainClass>
+    com.brh.projekt_plan4sign_2026/com.brh.projekt_plan4sign_2026.Launcher
+</mainClass>
+```
+
+> **Begründung:** `HelloApplication` war ein vom IntelliJ-Template generiertes
+> Beispiel und wird durch `Launcher` als echten Einstiegspunkt ersetzt.
+
+---
+
+#### 4.1.2 module-info.java – Anpassungen
+
+Das Java Module System erfordert eine explizite Deklaration aller verwendeten
+Module sowie der Packages, auf die andere Module Zugriff erhalten dürfen.
+```java
+module com.brh.projekt_plan4sign_2026 {
+
+    // JavaFX – wird für UI-Komponenten und FXML-Laden benötigt
+    requires javafx.controls;
+    requires javafx.fxml;
+
+    // Datenbankzugriff über JDBC
+    requires java.sql;
+
+    // BCrypt – für die sichere Passwort-Verschlüsselung
+    requires jbcrypt;
+
+    // opens: der FXMLLoader benötigt Reflection-Zugriff auf die Controller-Klassen
+    // Ohne diese Zeile → IllegalAccessException zur Laufzeit
+    opens com.brh.projekt_plan4sign_2026 to javafx.fxml;
+    opens com.brh.projekt_plan4sign_2026.controller to javafx.fxml;
+
+    // exports: macht die Packages für andere Module sichtbar
+    exports com.brh.projekt_plan4sign_2026;
+    exports com.brh.projekt_plan4sign_2026.controller;
+}
+```
+
+**Erklärung der Direktiven:**
+
+| Direktive | Bedeutung |
+|-----------|-----------|
+| `requires` | Deklariert ein externes Modul als Abhängigkeit |
+| `opens ... to` | Erlaubt Reflection-Zugriff zur Laufzeit (z. B. für FXMLLoader) |
+| `exports` | Macht ein Package für andere Module sichtbar |
+
+> **Begründung `requires java.sql`:** Der MySQL JDBC-Treiber wird über den
+> Java ServiceLoader-Mechanismus automatisch zur Laufzeit geladen.
+> Ein explizites `requires mysql...` ist daher nicht notwendig.
+
+> **Begründung `opens controller to javafx.fxml`:** Der FXMLLoader verwendet
+> Reflection, um `@FXML`-annotierte Felder in Controller-Klassen zu injizieren.
+> Ohne `opens` wirft die JVM eine `IllegalAccessException` zur Laufzeit.
+
+---
+
+#### 4.1.3 Role.java – Korrektur
+
+Der Java-Enum `Role` wurde an die MySQL-ENUM-Werte angepasst:
+```java
+public enum Role {
+    ADMIN,
+    DOLMETSCHER,
+    TEILNEHMER
+}
+```
+
+> **Begründung:** Die Datenbank ist die einzige Quelle der Wahrheit (Single Source of Truth).
+> Der Java-Enum muss die DB-Werte exakt widerspiegeln, da bei `Role.valueOf("ADMIN")`
+> ein `IllegalArgumentException` geworfen wird, wenn die Werte nicht übereinstimmen.
+
+---
+
+#### 4.1.4 Debugging – module-info.java (MySQL Module Name)
+
+Bei der Konfiguration der `module-info.java` wurde versucht, den MySQL JDBC-Treiber
+explizit als Modul zu deklarieren. Dabei traten folgende Fehler auf:
+
+**Versuch 1:**
+```java
+requires com.mysql.jdbc;
+```
+```
+java: Modul nicht gefunden: com.mysql.jdbc
+```
+
+**Versuch 2:**
+```java
+requires mysql.connector.java;
+```
+```
+java: Modul nicht gefunden: mysql.connector.java
+```
+
+**Lösung:**
+Die `requires`-Direktive für MySQL wurde vollständig entfernt.
+
+> **Begründung:** Der MySQL JDBC-Treiber `mysql-connector-java 8.0.33` ist ein
+> sogenanntes **Automatic Module** – er besitzt keinen offiziellen Modul-Namen
+> und muss daher nicht explizit deklariert werden.
+> Java lädt den Treiber automatisch zur Laufzeit über den **ServiceLoader-Mechanismus**
+> (`java.sql.Driver`). Die Direktive `requires java.sql` ist ausreichend.
+
+> **Entscheidung:** Der MySQL Connector wurde bewusst nicht auf die neuere Version
+> `mysql-connector-j 8.3.0` aktualisiert, da die bestehende Version `8.0.33`
+> bereits funktionsfähig war und eine unnötige Änderung vermieden werden sollte.
+
+---
+
+#### 4.1.5 MainController.java – Platzhalter
+
+Da `module-info.java` das Package `controller` mit `opens` und `exports` deklariert,
+erwartet der Java-Compiler mindestens eine Klasse in diesem Package.
+Da die Controller-Klassen noch nicht implementiert waren, führte dies zu einem
+Compile-Fehler.
+
+**Lösung:** Erstellung einer leeren Platzhalter-Klasse:
+```java
+package com.brh.projekt_plan4sign_2026.controller;
+
+// Platzhalter – wird in der nächsten Aufgabe implementiert
+public class MainController {
+}
+```
+
+> **Begründung:** Das Java Module System validiert beim Kompilieren,
+> ob die in `module-info.java` deklarierten Packages tatsächlich existieren.
+> Ein leeres Package ohne Klassen wird nicht als gültig erkannt.
+> Der Platzhalter wird ersetzt, sobald die echten Controller implementiert sind.
+
+#### 4.1.6 PasswordUtil.java – Passwort-Hashing mit BCrypt
+
+Für die sichere Speicherung von Passwörtern wurde die Klasse `PasswordUtil`
+im Package `util` erstellt.
+```java
+package com.brh.projekt_plan4sign_2026.util;
+
+import org.mindrot.jbcrypt.BCrypt;
+
+public class PasswordUtil {
+
+    // Privater Konstruktor – diese Klasse soll nicht instanziiert werden
+    private PasswordUtil() {}
+
+    // Erstellt einen sicheren Hash aus dem Klartext-Passwort
+    // workload 12 = Stärke des Hashing-Algorithmus (höher = sicherer, aber langsamer)
+    public static String hash(String plainPassword) {
+        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
+    }
+
+    // Vergleicht ein Klartext-Passwort mit einem gespeicherten Hash
+    // Gibt true zurück, wenn das Passwort übereinstimmt
+    public static boolean verify(String plainPassword, String hashedPassword) {
+        return BCrypt.checkpw(plainPassword, hashedPassword);
+    }
+}
+```
+
+> **Entscheidung:** Passwörter werden niemals im Klartext gespeichert.
+> BCrypt wurde gewählt, da der Algorithmus speziell für Passwort-Hashing
+> entwickelt wurde und automatisch einen zufälligen Salt generiert.
+
+| Element | Begründung |
+|---------|------------|
+| `private PasswordUtil()` | Utility-Klasse – keine Instanziierung notwendig |
+| `BCrypt.gensalt(12)` | Cost Factor 12 – jede Erhöhung um 1 verdoppelt die Berechnungszeit |
+| `checkpw()` | Der Salt ist im Hash enthalten – keine separate Speicherung notwendig |
+| `static` Methoden | Aufruf direkt über `PasswordUtil.hash(...)` ohne `new` |
+
+---
+
+#### 4.2.7 module-info.java – Erweiterung um util Package
+
+Nach der Erstellung von `PasswordUtil.java` wurde `module-info.java`
+um das `util` Package erweitert:
+```java
+opens com.brh.projekt_plan4sign_2026.util to javafx.fxml;
+exports com.brh.projekt_plan4sign_2026.util;
+```
+
+> **Begründung:** Das Java Module System erfordert, dass jedes Package,
+> das von anderen Klassen verwendet wird, explizit exportiert wird.
+> Ohne `exports util` wäre `PasswordUtil` außerhalb des Packages nicht sichtbar.
+
+### Status
+#### Woche 4: in Bearbeitung 🔄
+
+- ✅ pom.xml – BCrypt, Java 21, mainClass korrigiert
+- ✅ module-info.java – requires, opens, exports konfiguriert
+- ✅ Role.java – Enum-Werte mit MySQL synchronisiert
+- 🔄 PasswordUtil.java – BCrypt Hashing
+- 🔄 Login-System (LoginView.fxml + LoginController.java)
+- 🔄 Rollenbasierte Navigation
+- 🔄 Administrator-Oberfläche
+- 🔄 Teilnehmer-Sicht
+- 🔄 Dolmetscher-Sicht
