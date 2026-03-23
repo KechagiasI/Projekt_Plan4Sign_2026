@@ -977,6 +977,58 @@ exports com.brh.projekt_plan4sign_2026.util;
 > das von anderen Klassen verwendet wird, explizit exportiert wird.
 > Ohne `exports util` wäre `PasswordUtil` außerhalb des Packages nicht sichtbar.
 
+- UserDAO.java – try-with-resources, Optional<User>, Passwort-Hashing
+
+#### 4.2.8 UserDAO.java – Überarbeitung
+
+Die bestehende Skeleton-Implementierung von `UserDAO` wurde überarbeitet
+und um folgende Punkte ergänzt:
+
+**Änderung 1 – try-with-resources**
+
+Alle Datenbankressourcen (`Connection`, `PreparedStatement`, `ResultSet`)
+werden jetzt mit `try-with-resources` verwaltet:
+```java
+try (Connection connection = DatabaseConnection.getConnection();
+     PreparedStatement statement = connection.prepareStatement(sql)) {
+    ...
+}
+```
+
+> **Begründung:** Ohne explizites Schließen bleiben Datenbankverbindungen offen
+> (Memory Leak). `try-with-resources` schließt alle Ressourcen automatisch –
+> auch im Fehlerfall.
+
+**Änderung 2 – Optional\<User\> statt null**
+
+`getByUsername()` gibt jetzt `Optional<User>` zurück:
+```java
+public Optional<User> getByUsername(String username) throws SQLException
+```
+
+> **Begründung:** Die Rückgabe von `null` ist fehleranfällig –
+> ein vergessener `null`-Check führt zur `NullPointerException`.
+> `Optional<User>` zwingt den Aufrufer, den Fall „kein Benutzer gefunden"
+> explizit zu behandeln.
+
+**Änderung 3 – Passwort-Hashing in insert()**
+
+Das Passwort wird vor dem Speichern automatisch gehasht:
+```java
+statement.setString(2, PasswordUtil.hash(user.getPasswordHash()));
+```
+
+> **Begründung:** Passwörter dürfen niemals im Klartext in der Datenbank
+> gespeichert werden. Das Hashing erfolgt zentral in der DAO-Schicht,
+> sodass es nicht vergessen werden kann.
+
+**Änderung 4 – PreparedStatement in getAll()**
+
+`Statement` wurde durch `PreparedStatement` ersetzt.
+
+> **Begründung:** `PreparedStatement` ist auch ohne Parameter Best Practice,
+> da es konsistenter und sicherer ist.
+
 ### Status
 #### Woche 4: in Bearbeitung 🔄
 
