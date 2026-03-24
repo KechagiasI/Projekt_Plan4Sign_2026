@@ -3,8 +3,10 @@ package com.brh.projekt_plan4sign_2026.controller;
 import com.brh.projekt_plan4sign_2026.dao.UserDAO;
 import com.brh.projekt_plan4sign_2026.model.User;
 import com.brh.projekt_plan4sign_2026.util.PasswordUtil;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -12,9 +14,12 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+import java.net.URL;
 import java.util.Optional;
+import java.util.ResourceBundle;
 
-public class LoginController {
+// Verwaltet die Login-Oberfläche und prüft die Anmeldedaten
+public class LoginController implements Initializable {
 
     // FXML Injection → verbindet UI (FXML) mit Java-Code
     @FXML private TextField usernameField;
@@ -23,6 +28,14 @@ public class LoginController {
 
     // DAO für DB-Zugriff
     private final UserDAO userDAO= new UserDAO();
+
+    // Wird beim Laden der View automatisch aufgerufen
+    // Verhindert, dass das erste Feld sofort den Fokus bekommt → promptText wird sichtbar
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Fokus vom usernameField entfernen → promptText "Benutzername" wird sichtbar
+        Platform.runLater(() -> usernameField.getParent().requestFocus());
+    }
 
     @FXML
     private void handleLogin() {

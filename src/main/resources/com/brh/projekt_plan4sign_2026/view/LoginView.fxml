@@ -9,7 +9,9 @@
       spacing="15"
       prefWidth="400"
       prefHeight="350"
-      style="-fx-background-color: #f4f4f4;">
+      style="-fx-background-color: #f4f4f4;"
+      focusTraversable="true">
+
 
     <padding>
         <Insets top="60" right="80" bottom="60" left="80"/>
@@ -39,5 +41,6 @@
             onAction="#handleLogin"
             prefWidth="280"
             style="-fx-background-color: #2c6fad; -fx-text-fill: white; -fx-font-size: 14px;"/>
+
 
 </VBox>
