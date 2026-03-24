@@ -1037,6 +1037,157 @@ Erstens wurde try-with-resources verwendet, um Ressourcen automatisch zu schlie�
 Zweitens wurde Optional statt null eingeführt, um Fehler zu vermeiden.
 Drittens werden Passwörter jetzt mit BCrypt gehasht, um die Sicherheit zu erhöhen.
 Und viertens wird PreparedStatement verwendet, um SQL-Injection zu verhindern.
+--- 
+
+#### 4.3 Login-System
+
+##### 4.3.1 Übersicht
+
+Das Login-System besteht aus folgenden Komponenten:
+
+| Datei                  | Package            | Aufgabe                               |
+|------------------------|--------------------|---------------------------------------|
+| `LoginView.fxml`       | resources/.../view | Benutzeroberfläche des Login-Fensters |
+| `LoginController.java` | controller         | Verarbeitung der Login-Eingaben       |
+| `App.java`             | root               | JavaFX-Einstiegspunkt, lädt LoginView |
+| `Launcher.java`        | root               | Startet die JavaFX-Anwendung          |
+
+---
+
+##### 4.3.2 LoginView.fxml
+
+Die Login-Oberfläche wurde als FXML-Datei erstellt und enthält folgende Elemente:
+
+- `TextField` (fx:id="usernameField") – Eingabe des Benutzernamens
+- `PasswordField` (fx:id="passwordField") – Eingabe des Passworts
+- `Label` (fx:id="errorLabel") – Anzeige von Fehlermeldungen
+- `Button` – Auslöser für den Login-Vorgang (`onAction="#handleLogin"`)
+```xml
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.brh.projekt_plan4sign_2026.controller.LoginController"
+      alignment="CENTER"
+      spacing="15"
+      prefWidth="400"
+      prefHeight="350">
+    ...
+</VBox>
+```
+
+> **Entscheidung:** FXML-Dateien werden im `resources`-Verzeichnis abgelegt,
+> da sie keine Java-Klassen sind und vom `FXMLLoader` zur Laufzeit geladen werden.
+> Der Pfad lautet: `resources/com/brh/projekt_plan4sign_2026/view/`
+
+---
+
+##### 4.3.3 LoginController.java
+
+Der Controller verarbeitet die Login-Eingaben und navigiert zur rollenbasierten Ansicht.
+
+**Ablauf des Login-Vorgangs:**
+
+1. Eingaben aus den FXML-Feldern lesen
+2. Prüfen ob Felder leer sind
+3. Benutzer über `UserDAO.getByUsername()` in der DB suchen
+4. Passwort mit `PasswordUtil.verify()` prüfen
+5. Bei Erfolg → Navigation zur rollenbasierten Ansicht
+6. Bei Fehler → Fehlermeldung im `errorLabel`
+```java
+@FXML
+private void handleLogin() {
+    String username = usernameField.getText().trim();
+    String password = passwordField.getText();
+
+    if (username.isEmpty() || password.isEmpty()) {
+        errorLabel.setText("Bitte alle Felder ausfüllen.");
+        return;
+    }
+
+    Optional<User> result = userDAO.getByUsername(username);
+
+    if (result.isEmpty() || !PasswordUtil.verify(password, result.get().getPasswordHash())) {
+        errorLabel.setText("Ungültiger Benutzername oder Passwort.");
+        return;
+    }
+
+    navigateTo(result.get());
+}
+```
+
+**Rollenbasierte Navigation:**
+```java
+private void navigateTo(User user) {
+    String fxml = switch (user.getRole()) {
+        case ADMIN       -> "/com/brh/projekt_plan4sign_2026/view/AdminView.fxml";
+        case TEILNEHMER  -> "/com/brh/projekt_plan4sign_2026/view/TeilnehmerView.fxml";
+        case DOLMETSCHER -> "/com/brh/projekt_plan4sign_2026/view/DolmetscherView.fxml";
+    };
+    ...
+}
+```
+
+> **Entscheidung:** `switch` mit Pattern Matching wurde verwendet,
+> da es alle Enum-Werte zur Kompilierzeit prüft – vergessene Rollen
+> führen zu einem Compiler-Fehler, nicht zu einem Laufzeitfehler.
+
+> **Entscheidung:** `Optional<User>` aus `getByUsername()` verhindert
+> eine `NullPointerException`, wenn kein Benutzer gefunden wird.
+
+---
+
+##### 4.3.4 App.java
+
+`App.java` ersetzt die vom IntelliJ-Template generierte `HelloApplication.java`
+und ist der JavaFX-Einstiegspunkt der Anwendung.
+```java
+public class App extends Application {
+    @Override
+    public void start(Stage stage) throws IOException {
+        FXMLLoader loader = new FXMLLoader(
+            getClass().getResource("/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
+        );
+        Scene scene = new Scene(loader.load());
+        stage.setTitle("Plan4Sign 2026");
+        stage.setWidth(400);
+        stage.setHeight(350);
+        stage.setResizable(false);
+        stage.setScene(scene);
+        stage.show();
+    }
+}
+```
+
+> **Entscheidung:** `setResizable(false)` wurde gesetzt, da das Login-Fenster
+> eine feste Größe haben soll und nicht skaliert werden muss.
+
+---
+
+##### 4.3.5 Testbenutzer
+
+Für den Test des Login-Systems wurde ein Testbenutzer in der Datenbank angelegt:
+```sql
+INSERT INTO User (username, passwordHash, role)
+VALUES ('admin', '$2a$12$...', 'ADMIN');
+```
+
+> Das Passwort `admin123` wurde mit `PasswordUtil.hash()` gehasht
+> und als BCrypt-Hash in der Datenbank gespeichert.
+> Das Klartext-Passwort wird nirgends gespeichert.
+
+---
+
+##### 4.3.6 Platzhalter-Ansichten
+
+Für jede Benutzerrolle wurden vorläufige FXML-Ansichten und Controller erstellt,
+die nach erfolgreichem Login geladen werden:
+
+| Rolle       | FXML                   | Controller                   |
+|-------------|------------------------|------------------------------|
+| ADMIN       | `AdminView.fxml`       | `AdminController.java`       |
+| TEILNEHMER  | `TeilnehmerView.fxml`  | `TeilnehmerController.java`  |
+| DOLMETSCHER | `DolmetscherView.fxml` | `DolmetscherController.java` |
+
+> **Begründung:** Die Platzhalter ermöglichen es, das vollständige
+> Login-System zu testen, bevor die eigentlichen Ansichten implementiert werden.
 
 ### Status
 #### Woche 4: in Bearbeitung 🔄
