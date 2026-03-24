@@ -1029,13 +1029,18 @@ statement.setString(2, PasswordUtil.hash(user.getPasswordHash()));
 > **Begründung:** `PreparedStatement` ist auch ohne Parameter Best Practice,
 > da es konsistenter und sicherer ist.
 
+
+Zusammenfassung 
+
+Im neuen Code wurden mehrere Verbesserungen umgesetzt:
+Erstens wurde try-with-resources verwendet, um Ressourcen automatisch zu schließen.
+Zweitens wurde Optional statt null eingeführt, um Fehler zu vermeiden.
+Drittens werden Passwörter jetzt mit BCrypt gehasht, um die Sicherheit zu erhöhen.
+Und viertens wird PreparedStatement verwendet, um SQL-Injection zu verhindern.
+
 ### Status
 #### Woche 4: in Bearbeitung 🔄
 
-- ✅ pom.xml – BCrypt, Java 21, mainClass korrigiert
-- ✅ module-info.java – requires, opens, exports konfiguriert
-- ✅ Role.java – Enum-Werte mit MySQL synchronisiert
-- 🔄 PasswordUtil.java – BCrypt Hashing
 - 🔄 Login-System (LoginView.fxml + LoginController.java)
 - 🔄 Rollenbasierte Navigation
 - 🔄 Administrator-Oberfläche

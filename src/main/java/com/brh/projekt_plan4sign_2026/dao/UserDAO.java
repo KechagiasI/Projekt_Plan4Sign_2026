@@ -126,6 +126,7 @@ public class UserDAO {
 
         // PreparedStatement verwenden
         PreparedStatement statement = connection.prepareStatement(sql)) {
+
             // ID setzen
             statement.setInt(1, userID);
 

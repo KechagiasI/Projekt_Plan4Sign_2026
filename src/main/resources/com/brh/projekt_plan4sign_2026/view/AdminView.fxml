@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.brh.projekt_plan4sign_2026.controller.AdminController"
+      alignment="CENTER"
+      spacing="20"
+      prefWidth="800"
+      prefHeight="600">
+
+    <Label text="Administrator – Hauptmenü"
+           style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+    <Label text="(wird in der nächsten Aufgabe implementiert)"
+           style="-fx-text-fill: gray;"/>
+
+</VBox>

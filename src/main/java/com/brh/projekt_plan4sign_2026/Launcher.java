@@ -4,6 +4,7 @@ import javafx.application.Application;
 
 public class Launcher {
     public static void main(String[] args) {
-        Application.launch(HelloApplication.class, args);
+        // Startet die JavaFX-Anwendung über App.java
+        Application.launch(App.class, args);
     }
 }
