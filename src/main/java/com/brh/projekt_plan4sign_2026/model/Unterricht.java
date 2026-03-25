@@ -12,6 +12,9 @@ public class Unterricht {
     private int klasseID;
     private int fachID;
     private Integer dolmetscherID; // Integer weil NULL erlaubt
+    private String klassename;
+    private String fachname;
+    private String dolmetschername;
 
     // Constructor
     public Unterricht(int unterrichtID, LocalDate date, LocalTime startTime,
@@ -34,6 +37,9 @@ public class Unterricht {
     public int getKlasseID()            { return klasseID; }
     public int getFachID()              { return fachID; }
     public Integer getDolmetscherID()   { return dolmetscherID; }
+    public String getKlassename()       { return klassename; }
+    public String getFachname()         { return fachname; }
+    public String getDolmetschername()  { return dolmetschername; }
 
     // Setters
     public void setUnterrichtID(int unterrichtID)       { this.unterrichtID = unterrichtID; }
@@ -43,4 +49,7 @@ public class Unterricht {
     public void setKlasseID(int klasseID)               { this.klasseID = klasseID; }
     public void setFachID(int fachID)                   { this.fachID = fachID; }
     public void setDolmetscherID(Integer dolmetscherID) { this.dolmetscherID = dolmetscherID; }
+    public void setKlassename(String klassename)        { this.klassename = klassename; }
+    public void setFachname(String fachname)            { this.fachname = fachname; }
+    public void setDolmetschername(String dolmetschername) { this.dolmetschername = dolmetschername; }
 }

@@ -11,6 +11,59 @@ import java.util.List;
 
 public class UnterrichtDAO {
 
+    public List<Unterricht> getAllWithDetails() throws SQLException {
+        // Liste für Ergebnisse
+        List<Unterricht> unterrichts = new ArrayList<>();
+
+        // SQL mit JOIN → holt alle Daten für Anzeige (UI)
+        String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
+                "u.KlasseID, u.FachID, u.DolmetscherID, " +
+                "k.klassename, f.fachname, " +
+                "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername " +
+                "FROM Unterricht u " +
+                "JOIN Klasse k ON u.KlasseID = k.KlasseID " +
+                "JOIN Fach f ON u.FachID = f.FachID " +
+                "LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID " +
+                "ORDER BY u.date, u.starttime";
+
+        // Verbindung zur DB
+        Connection connection = DatabaseConnection.getConnection();
+        // SQL ausführen
+        Statement statement = connection.createStatement();
+        ResultSet resultSet = statement.executeQuery(sql);
+
+        // Durch alle Ergebnisse gehen
+        while (resultSet.next()) {
+
+            // Basisdaten (aus Tabelle Unterricht)
+            int unterrichtID = resultSet.getInt("UnterrichtID");
+            LocalDate date = resultSet.getDate("date").toLocalDate();
+            LocalTime starttime = resultSet.getTime("starttime").toLocalTime();
+            LocalTime endtime = resultSet.getTime("endtime").toLocalTime();
+            int klasseID = resultSet.getInt("KlasseID");
+            int fachID = resultSet.getInt("FachID");
+
+            // Dolmetscher kann NULL sein → deshalb Integer
+            Integer dolmetscherID = resultSet.getObject("DolmetscherID")
+                    != null ? resultSet.getInt("DolmetscherID") : null;
+
+            // Objekt erstellen (nur Basisdaten)
+            Unterricht u = new Unterricht(
+                    unterrichtID, date, starttime, endtime, klasseID, fachID, dolmetscherID);
+
+            // Zusatzdaten (für Anzeige im UI)
+            u.setKlassename(resultSet.getString("klassename"));
+            u.setFachname(resultSet.getString("fachname"));
+            u.setDolmetschername(resultSet.getString("dolmetschername"));
+
+            // Objekt zur Liste hinzufügen
+            unterrichts.add(u);
+        }
+
+        // Ergebnis zurückgeben
+        return unterrichts;
+    }
+
     // Holt alle Unterrichtseinheiten aus der Datenbank
     public List<Unterricht> getAll() throws SQLException {
 

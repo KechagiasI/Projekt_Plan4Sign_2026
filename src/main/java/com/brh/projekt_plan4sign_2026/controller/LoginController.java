@@ -46,7 +46,7 @@ public class LoginController implements Initializable {
 
         // Validierung → leere Felder verhindern
         if (username.isEmpty() || password.isEmpty()) {
-            errorLabel.setText("Bitte alle Folder ausfüllen.");
+            errorLabel.setText("Bitte alle Felder ausfüllen.");
             return;
         }
         try {
@@ -59,7 +59,7 @@ public class LoginController implements Initializable {
             if (result.isEmpty() || !PasswordUtil.verify(password, result.get().getPasswordHash())) {
 
                 // Fehlermeldung bei falschen Daten
-                errorLabel.setText("Ungültiger Password oder Passwort.");
+                errorLabel.setText("Ungültiger Benutzername oder Passwort.");
                 return;
             }
 

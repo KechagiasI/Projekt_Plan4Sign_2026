@@ -1189,6 +1189,128 @@ die nach erfolgreichem Login geladen werden:
 > **Begründung:** Die Platzhalter ermöglichen es, das vollständige
 > Login-System zu testen, bevor die eigentlichen Ansichten implementiert werden.
 
+---
+
+##### 4.3.7 Erweiterung der Unterricht-Entität
+
+Im Verlauf der Implementierung wurde festgestellt, dass die bestehende
+`Unterricht`-Klasse zwar die Datenbankstruktur korrekt abbildet,
+jedoch nicht ausreichend für die Darstellung im Frontend ist.
+
+Die ursprüngliche Klasse enthielt ausschließlich technische Fremdschlüssel:
+
+- KlasseID
+- FachID
+- DolmetscherID
+
+Für die Anzeige in der Benutzeroberfläche werden jedoch
+lesbare Informationen benötigt (z. B. Klassenname statt ID).
+
+Daher wurde die Klasse um folgende Attribute erweitert:
+```java
+private String klassename;
+private String fachname;
+private String dolmetschername;
+```
+Zusätzlich wurden entsprechende Getter- und Setter-Methoden ergänzt.
+
+```text
+Begründung:
+Die Erweiterung ermöglicht eine direkte Darstellung der Daten im UI,
+ohne zusätzliche Logik im Controller.
+Die Daten werden bereits im DAO vorbereitet (JOIN), wodurch eine klare
+Trennung zwischen Datenzugriff und Darstellung eingehalten wird (MVC-Prinzip).
+```
+#### 4.3.8 Erweiterung des UnterrichtDAO (JOIN-Abfrage)
+
+Zur Anzeige der vollständigen Unterrichtsdaten wurde die Methode
+`getAllWithDetails()` im `UnterrichtDAO` implementiert.
+
+Dabei wird eine SQL-Abfrage mit mehreren JOINs verwendet:
+
+```sql
+SELECT 
+u.UnterrichtID,
+u.date,
+u.starttime,
+u.endtime,
+u.KlasseID,
+u.FachID,
+u.DolmetscherID,
+k.klassename,
+f.fachname,
+CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername
+FROM Unterricht u
+JOIN Klasse k ON u.KlasseID = k.KlasseID
+JOIN Fach f ON u.FachID = f.FachID
+LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID
+ORDER BY u.date, u.starttime;
+```
+
+Die Abfrage verbindet die Tabellen:
+
+- `Unterricht` → Basisdaten
+- `Klasse` → Klassenname
+- `Fach` → Fachname
+- `Dolmetscher` → Name des Dolmetschers (optional)
+
+```text
+Begründung:
+Durch die Verwendung von JOINs werden alle benötigten Daten in einer
+einzigen Abfrage geladen.
+Der `LEFT JOIN` stellt sicher, dass auch Unterrichtseinheiten ohne
+zugewiesenen Dolmetscher angezeigt werden.
+```
+
+#### 4.3.9 Mapping von Datenbank zu Objekt
+
+Die aus der Datenbank geladenen Daten werden im DAO in Java-Objekte
+der Klasse Unterricht überführt.
+
+Dabei erfolgt die Erstellung des Objekts in zwei Schritten:
+
+1. Initialisierung der Basisdaten über den Konstruktor
+2. Ergänzung der Anzeige-Daten über Setter-Methoden
+
+```java
+Unterricht unterricht = new Unterricht(...);
+
+unterricht.setKlassename(...);
+unterricht.setFachname(...);
+unterricht.setDolmetschername(...);
+```
+
+```text
+Begründung:
+Der Konstruktor enthält ausschließlich Pflichtfelder (Datenbankstruktur),
+während zusätzliche Anzeige-Daten separat gesetzt werden.
+Dieses Vorgehen verhindert eine Überladung des Konstruktors und
+ermöglicht eine flexible Erweiterung des Modells.
+```
+
+##### 4.3.10 Trennung von Datenzugriff und Darstellung
+
+Die Aufbereitung der Daten erfolgt vollständig im DAO,
+während der Controller ausschließlich für die Darstellung zuständig ist.
+
+Datenfluss:
+
+```textmate
+Datenbank → DAO → Model (Unterricht) → Controller → UI
+```
+
+```text
+Begründung:
+Diese klare Trennung entspricht dem MVC-Architekturprinzip und verhindert,
+dass Geschäftslogik im Controller implementiert wird.
+Dadurch bleibt der Code wartbar, übersichtlich und erweiterbar.
+```
+
+
+
+
+
+
 ### Status
 #### Woche 4: in Bearbeitung 🔄
 

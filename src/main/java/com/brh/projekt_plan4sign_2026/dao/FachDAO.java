@@ -70,7 +70,7 @@ public class FachDAO {
         while (resultSet.next()) {
             int fachID = resultSet.getInt("FachID");
             String fachname = resultSet.getString("fachname");
-            boolean isInterpreterRelevant = resultSet.getBoolean("isinterpreterRelavant");
+            boolean isInterpreterRelevant = resultSet.getBoolean("isinterpreterRelevant");
 
             // Objekt erstellen und zur Liste hinzufügen
             list.add(new Fach(fachID, fachname, isInterpreterRelevant, bereichID));
