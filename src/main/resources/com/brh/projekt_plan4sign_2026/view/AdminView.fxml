@@ -22,7 +22,8 @@
            <TableColumn fx:id="colEnd" text="Ende" prefWidth="80"/>
            <TableColumn fx:id="colKlasse" text="Klasse" prefWidth="80"/>
            <TableColumn fx:id="colFach" text="Fach" prefWidth="120"/>
-           <TableColumn fx:id="colDolmetscher" text="Dolmetscher" prefWidth="180"/>
+           <TableColumn fx:id="colDolmetscher" text="Dolmetscher" prefWidth="150"/>
+           <TableColumn fx:id="colTeilnehmer" text="Teilnehmer" prefWidth="150"/>
        </columns>
     </TableView>
 

@@ -1,11 +1,14 @@
 package com.brh.projekt_plan4sign_2026.controller;
 
+import com.brh.projekt_plan4sign_2026.dao.AvailabilityDAO;
 import com.brh.projekt_plan4sign_2026.dao.DolmetscherDAO;
 import com.brh.projekt_plan4sign_2026.dao.UnterrichtDAO;
 import com.brh.projekt_plan4sign_2026.model.Dolmetscher;
 import com.brh.projekt_plan4sign_2026.model.Unterricht;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -30,7 +33,10 @@ public class AdminController {
     @FXML
     private TableColumn<Unterricht, String> colDolmetscher;
     @FXML
+    private TableColumn<Unterricht, String> colTeilnehmer;
+    @FXML
     private ComboBox<String> comboDolmetscher;
+
 
     // Wird automatisch aufgerufen wenn View geladen wird
     @FXML
@@ -43,7 +49,7 @@ public class AdminController {
         colKlasse.setCellValueFactory(data-> new javafx.beans.property.SimpleStringProperty(data.getValue().getKlassename().toString()));
         colFach.setCellValueFactory(data-> new javafx.beans.property.SimpleStringProperty(data.getValue().getFachname().toString()));
         colDolmetscher.setCellValueFactory(data-> new javafx.beans.property.SimpleStringProperty(data.getValue().getDolmetschername() != null ? data.getValue().getDolmetschername() : " kein "));
-
+        colTeilnehmer.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTeilnehmername() != null ? data.getValue().getTeilnehmername() : "kein"));
 
         // Daten Load
         loadData();
@@ -81,11 +87,12 @@ public class AdminController {
 
     @FXML
     private void handleAssign() {
+
         Unterricht selected = tableUnterricht.getSelectionModel().getSelectedItem();
         String name = comboDolmetscher.getValue();
 
         if (selected == null || name == null) {
-            System.out.println("Bitter Auswahl treffen!");
+            System.out.println("Bitte Auswahl treffen!");
             return;
         }
         try {
@@ -95,6 +102,25 @@ public class AdminController {
                 String fullname = d.getFirstname() + " " + d.getLastname();
 
                 if (fullname.equals(name)) {
+
+                    AvailabilityDAO availabilityDAO = new AvailabilityDAO();
+
+                    boolean frei = availabilityDAO.isAvailable(
+                            d.getDolmetscherID(),
+                            selected.getDate(),
+                            selected.getStartTime(),
+                            selected.getEndTime()
+                    );
+
+                    if (!frei) {
+                        Alert alert = new Alert(Alert.AlertType.WARNING);
+                        alert.setTitle("Warnung");
+                        alert.setHeaderText("Dolmetscher nicht verfügbar");
+                        alert.setContentText("Der Dolmetscher ist zu diesem Zeitpunkt nicht verfügbar.");
+                        alert.showAndWait();
+                        return;
+                    }
+
                     UnterrichtDAO uDAO = new UnterrichtDAO();
 
                     uDAO.assignDolmetscher( selected.getUnterrichtID(), d.getDolmetscherID());

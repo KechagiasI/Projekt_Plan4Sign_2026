@@ -19,11 +19,13 @@ public class UnterrichtDAO {
         String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
                 "u.KlasseID, u.FachID, u.DolmetscherID, " +
                 "k.klassename, f.fachname, " +
-                "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername " +
+                "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername, " +
+                "CONCAT(t.firstname, ' ', t.lastname) AS teilnehmername " +
                 "FROM Unterricht u " +
                 "JOIN Klasse k ON u.KlasseID = k.KlasseID " +
                 "JOIN Fach f ON u.FachID = f.FachID " +
                 "LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID " +
+                "LEFT JOIN Teilnehmer t ON t.KlasseID = u.KlasseID " +
                 "ORDER BY u.date, u.starttime";
 
         // Verbindung zur DB
@@ -55,6 +57,7 @@ public class UnterrichtDAO {
             u.setKlassename(resultSet.getString("klassename"));
             u.setFachname(resultSet.getString("fachname"));
             u.setDolmetschername(resultSet.getString("dolmetschername"));
+            u.setTeilnehmername(resultSet.getString("teilnehmername"));
 
             // Objekt zur Liste hinzufügen
             unterrichts.add(u);

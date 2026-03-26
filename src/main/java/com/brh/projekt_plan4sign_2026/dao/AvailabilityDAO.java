@@ -159,4 +159,32 @@ public class AvailabilityDAO {
         // Löschung ausführen
         statement.executeUpdate();
     }
+
+    public boolean isAvailable(int dolmetscherID, LocalDate date, LocalTime start, LocalTime end) throws SQLException {
+
+        // Prüfen ob eine ABWESENHEIT existiert (Krank, Urlaub, etc.)
+        String sql = "SELECT * FROM Availability " +
+                "WHERE DolmetscherID = ? " +
+                "AND availabilitytype != 'Verfügbar' " +
+                "AND (" +
+                "  (date = ? AND starttime <= ? AND endtime >= ?) " +
+                "  OR (datefrom <= ? AND dateto >= ?)" +
+                ")";
+
+        Connection connection = DatabaseConnection.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);
+
+        statement.setInt(1, dolmetscherID);
+        statement.setDate(2, Date.valueOf(date));
+        statement.setTime(3, Time.valueOf(start));
+        statement.setTime(4, Time.valueOf(end));
+        statement.setDate(5, Date.valueOf(date));
+        statement.setDate(6, Date.valueOf(date));
+
+        ResultSet rs = statement.executeQuery();
+
+        // true = keine Abwesenheit gefunden = verfügbar
+        // false = Abwesenheit gefunden = nicht verfügbar
+        return !rs.next();
+    }
 }

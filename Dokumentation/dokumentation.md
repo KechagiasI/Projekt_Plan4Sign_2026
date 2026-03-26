@@ -1214,13 +1214,13 @@ private String dolmetschername;
 ```
 Zusätzlich wurden entsprechende Getter- und Setter-Methoden ergänzt.
 
-```text
-Begründung:
-Die Erweiterung ermöglicht eine direkte Darstellung der Daten im UI,
-ohne zusätzliche Logik im Controller.
-Die Daten werden bereits im DAO vorbereitet (JOIN), wodurch eine klare
-Trennung zwischen Datenzugriff und Darstellung eingehalten wird (MVC-Prinzip).
-```
+
+> **Begründung:**
+> Die Erweiterung ermöglicht eine direkte Darstellung der Daten im UI,
+> ohne zusätzliche Logik im Controller.
+> Die Daten werden bereits im DAO vorbereitet (JOIN), wodurch eine klare
+> Trennung zwischen Datenzugriff und Darstellung eingehalten wird (MVC-Prinzip).
+
 
 ---
 
@@ -1257,13 +1257,13 @@ Die Abfrage verbindet die Tabellen:
 - `Fach` → Fachname
 - `Dolmetscher` → Name des Dolmetschers (optional)
 
-```text
-Begründung:
-Durch die Verwendung von JOINs werden alle benötigten Daten in einer
-einzigen Abfrage geladen.
-Der `LEFT JOIN` stellt sicher, dass auch Unterrichtseinheiten ohne
-zugewiesenen Dolmetscher angezeigt werden.
-```
+> **Begründung:**
+> Begründung:
+> Durch die Verwendung von JOINs werden alle benötigten Daten in einer
+> einzigen Abfrage geladen.
+> Der `LEFT JOIN` stellt sicher, dass auch Unterrichtseinheiten ohne
+> zugewiesenen Dolmetscher angezeigt werden.
+
 --- 
 
 #### 4.2.9 Mapping von Datenbank zu Objekt
@@ -1284,13 +1284,12 @@ unterricht.setFachname(...);
 unterricht.setDolmetschername(...);
 ```
 
-```text
-Begründung:
-Der Konstruktor enthält ausschließlich Pflichtfelder (Datenbankstruktur),
-während zusätzliche Anzeige-Daten separat gesetzt werden.
-Dieses Vorgehen verhindert eine Überladung des Konstruktors und
-ermöglicht eine flexible Erweiterung des Modells.
-```
+> **Begründung:**
+> Der Konstruktor enthält ausschließlich Pflichtfelder (Datenbankstruktur),
+> während zusätzliche Anzeige-Daten separat gesetzt werden.
+> Dieses Vorgehen verhindert eine Überladung des Konstruktors und
+> ermöglicht eine flexible Erweiterung des Modells.
+
 ---
 
 ##### 4.2.10 Trennung von Datenzugriff und Darstellung
@@ -1304,12 +1303,11 @@ Datenfluss:
 Datenbank → DAO → Model (Unterricht) → Controller → UI
 ```
 
-```text
-Begründung:
-Diese klare Trennung entspricht dem MVC-Architekturprinzip und verhindert,
-dass Geschäftslogik im Controller implementiert wird.
-Dadurch bleibt der Code wartbar, übersichtlich und erweiterbar.
-```
+> **Begründung:**
+> Diese klare Trennung entspricht dem MVC-Architekturprinzip und verhindert,
+> dass Geschäftslogik im Controller implementiert wird.
+> Dadurch bleibt der Code wartbar, übersichtlich und erweiterbar.
+> 
 ---
 
 ##### 4.2.11 Darstellung der Daten im TableView
@@ -1331,11 +1329,11 @@ colKlasse.setCellValueFactory(data ->
     new SimpleStringProperty(data.getValue().getKlassename()));
 ```
 
-`Begründung:
-Die TableColumn greift direkt auf die Getter des Modells zu.
-Dadurch bleibt der Controller schlank und enthält keine eigene Logik
-zur Datenverarbeitung.
-Die Darstellung wird vollständig über das Model gesteuert.`
+> **Begründung:**
+> Die TableColumn greift direkt auf die Getter des Modells zu.
+> Dadurch bleibt der Controller schlank und enthält keine eigene Logik
+> zur Datenverarbeitung.
+> Die Darstellung wird vollständig über das Model gesteuert.`
 
 ---
 
@@ -1349,12 +1347,11 @@ List<Unterricht> list = dao.getAllWithDetails();
 tableUnterricht.setItems(FXCollections.observableArrayList(list));
 ```
 
-```text
-Begründung:
-Die Verwendung von ObservableList ist notwendig, damit JavaFX
-Änderungen in der Liste automatisch erkennt und die UI aktualisiert.
-Dadurch wird eine dynamische Darstellung ermöglicht.
-```
+> **Begründung:**
+> Die Verwendung von ObservableList ist notwendig, damit JavaFX
+> Änderungen in der Liste automatisch erkennt und die UI aktualisiert.
+> Dadurch wird eine dynamische Darstellung ermöglicht.
+
 ---
 
 #### 4.2.13 Auswahl eines Dolmetschers über ComboBox
@@ -1362,13 +1359,12 @@ Dadurch wird eine dynamische Darstellung ermöglicht.
 Für die Zuweisung eines Dolmetschers wird eine `ComboBox` verwendet,
 die alle verfügbaren Dolmetscher anzeigt.
 
-```text
-Begründung:
-Die Anzeige erfolgt über den vollständigen Namen (Vorname + Nachname),
-da dies für den Benutzer verständlich ist.
-Die Speicherung erfolgt jedoch weiterhin über die ID,
-was eine saubere Trennung zwischen Anzeige und Datenstruktur ermöglicht.
-```
+> **Begründung:**
+> Die Anzeige erfolgt über den vollständigen Namen (Vorname + Nachname),
+> da dies für den Benutzer verständlich ist.
+> Die Speicherung erfolgt jedoch weiterhin über die ID,
+> was eine saubere Trennung zwischen Anzeige und Datenstruktur ermöglicht.
+
 ---
 
 #### 4.2.14 Zuweisung eines Dolmetschers zu einer Unterrichtseinheit
@@ -1387,13 +1383,12 @@ und die Zuweisung in der Datenbank gespeichert.
 dao.assignDolmetscher(selected.getUnterrichtID(), dolmetscherID);
 ```
 
-```text
-Begründung:
-Die Auswahl erfolgt über die Benutzeroberfläche (TableView + ComboBox),
-während die eigentliche Zuweisung über das DAO durchgeführt wird.
-Dies stellt sicher, dass alle Datenbankoperationen zentral im DAO bleiben
-und nicht im Controller implementiert werden.
-```
+> **Begründung:**
+> Die Auswahl erfolgt über die Benutzeroberfläche (TableView + ComboBox),
+> während die eigentliche Zuweisung über das DAO durchgeführt wird.
+> Dies stellt sicher, dass alle Datenbankoperationen zentral im DAO bleiben
+> und nicht im Controller implementiert werden.
+
 ---
 
 #### 4.2.15 Aktualisierung der Ansicht nach Änderungen
@@ -1405,13 +1400,12 @@ um die aktualisierten Daten im TableView darzustellen.
 loadData();
 ```
 
-``` text
-Begründung:
-Durch das erneute Laden der Daten wird sichergestellt,
-dass die Benutzeroberfläche immer den aktuellen Zustand der Datenbank
-widerspiegelt.
-Dies verhindert Inkonsistenzen zwischen UI und Datenbank.`
-```
+> **Begründung:**
+> Durch das erneute Laden der Daten wird sichergestellt,
+> dass die Benutzeroberfläche immer den aktuellen Zustand der Datenbank
+> widerspiegelt.
+> Dies verhindert Inkonsistenzen zwischen UI und Datenbank.`
+
 ---
 
 
