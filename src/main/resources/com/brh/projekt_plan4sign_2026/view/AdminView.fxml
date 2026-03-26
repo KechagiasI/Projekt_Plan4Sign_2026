@@ -12,7 +12,26 @@
     <Label text="Administrator – Hauptmenü"
            style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-    <Label text="(wird in der nächsten Aufgabe implementiert)"
-           style="-fx-text-fill: gray;"/>
+    <!-- TableView -->
+
+    <TableView fx:id="tableUnterricht">
+
+       <columns>
+           <TableColumn fx:id="colDate" text="Datum" prefWidth="100"/>
+           <TableColumn fx:id="colStart" text="Start" prefWidth="80"/>
+           <TableColumn fx:id="colEnd" text="Ende" prefWidth="80"/>
+           <TableColumn fx:id="colKlasse" text="Klasse" prefWidth="80"/>
+           <TableColumn fx:id="colFach" text="Fach" prefWidth="120"/>
+           <TableColumn fx:id="colDolmetscher" text="Dolmetscher" prefWidth="180"/>
+       </columns>
+    </TableView>
+
+    <HBox spacing="10" alignment="CENTER">
+
+        <ComboBox fx:id="comboDolmetscher" promptText="Dolmetscher auswählen"/>
+
+        <Button text="Zuweisen" onAction="#handleAssign"/>
+
+    </HBox>
 
 </VBox>

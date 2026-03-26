@@ -955,16 +955,16 @@ public class PasswordUtil {
 > BCrypt wurde gewählt, da der Algorithmus speziell für Passwort-Hashing
 > entwickelt wurde und automatisch einen zufälligen Salt generiert.
 
-| Element | Begründung |
-|---------|------------|
-| `private PasswordUtil()` | Utility-Klasse – keine Instanziierung notwendig |
-| `BCrypt.gensalt(12)` | Cost Factor 12 – jede Erhöhung um 1 verdoppelt die Berechnungszeit |
-| `checkpw()` | Der Salt ist im Hash enthalten – keine separate Speicherung notwendig |
-| `static` Methoden | Aufruf direkt über `PasswordUtil.hash(...)` ohne `new` |
+| Element                  | Begründung                                                            |
+|--------------------------|-----------------------------------------------------------------------|
+| `private PasswordUtil()` | Utility-Klasse – keine Instanziierung notwendig                       |
+| `BCrypt.gensalt(12)`     | Cost Factor 12 – jede Erhöhung um 1 verdoppelt die Berechnungszeit    |
+| `checkpw()`              | Der Salt ist im Hash enthalten – keine separate Speicherung notwendig |
+| `static` Methoden        | Aufruf direkt über `PasswordUtil.hash(...)` ohne `new`                |
 
 ---
 
-#### 4.2.7 module-info.java – Erweiterung um util Package
+#### 4.1.7 module-info.java – Erweiterung um util Package
 
 Nach der Erstellung von `PasswordUtil.java` wurde `module-info.java`
 um das `util` Package erweitert:
@@ -979,7 +979,7 @@ exports com.brh.projekt_plan4sign_2026.util;
 
 - UserDAO.java – try-with-resources, Optional<User>, Passwort-Hashing
 
-#### 4.2.8 UserDAO.java – Überarbeitung
+#### 4.1.8 UserDAO.java – Überarbeitung
 
 Die bestehende Skeleton-Implementierung von `UserDAO` wurde überarbeitet
 und um folgende Punkte ergänzt:
@@ -1039,9 +1039,9 @@ Drittens werden Passwörter jetzt mit BCrypt gehasht, um die Sicherheit zu erhö
 Und viertens wird PreparedStatement verwendet, um SQL-Injection zu verhindern.
 --- 
 
-#### 4.3 Login-System
+#### 4.2 Login-System
 
-##### 4.3.1 Übersicht
+##### 4.2.1 Übersicht
 
 Das Login-System besteht aus folgenden Komponenten:
 
@@ -1054,7 +1054,7 @@ Das Login-System besteht aus folgenden Komponenten:
 
 ---
 
-##### 4.3.2 LoginView.fxml
+##### 4.2.2 LoginView.fxml
 
 Die Login-Oberfläche wurde als FXML-Datei erstellt und enthält folgende Elemente:
 
@@ -1079,7 +1079,7 @@ Die Login-Oberfläche wurde als FXML-Datei erstellt und enthält folgende Elemen
 
 ---
 
-##### 4.3.3 LoginController.java
+##### 4.2.3 LoginController.java
 
 Der Controller verarbeitet die Login-Eingaben und navigiert zur rollenbasierten Ansicht.
 
@@ -1134,7 +1134,7 @@ private void navigateTo(User user) {
 
 ---
 
-##### 4.3.4 App.java
+##### 4.2.4 App.java
 
 `App.java` ersetzt die vom IntelliJ-Template generierte `HelloApplication.java`
 und ist der JavaFX-Einstiegspunkt der Anwendung.
@@ -1161,7 +1161,7 @@ public class App extends Application {
 
 ---
 
-##### 4.3.5 Testbenutzer
+##### 4.2.5 Testbenutzer
 
 Für den Test des Login-Systems wurde ein Testbenutzer in der Datenbank angelegt:
 ```sql
@@ -1175,7 +1175,7 @@ VALUES ('admin', '$2a$12$...', 'ADMIN');
 
 ---
 
-##### 4.3.6 Platzhalter-Ansichten
+##### 4.2.6 Platzhalter-Ansichten
 
 Für jede Benutzerrolle wurden vorläufige FXML-Ansichten und Controller erstellt,
 die nach erfolgreichem Login geladen werden:
@@ -1191,7 +1191,7 @@ die nach erfolgreichem Login geladen werden:
 
 ---
 
-##### 4.3.7 Erweiterung der Unterricht-Entität
+##### 4.2.7 Erweiterung der Unterricht-Entität
 
 Im Verlauf der Implementierung wurde festgestellt, dass die bestehende
 `Unterricht`-Klasse zwar die Datenbankstruktur korrekt abbildet,
@@ -1221,7 +1221,10 @@ ohne zusätzliche Logik im Controller.
 Die Daten werden bereits im DAO vorbereitet (JOIN), wodurch eine klare
 Trennung zwischen Datenzugriff und Darstellung eingehalten wird (MVC-Prinzip).
 ```
-#### 4.3.8 Erweiterung des UnterrichtDAO (JOIN-Abfrage)
+
+---
+
+#### 4.2.8 Erweiterung des UnterrichtDAO (JOIN-Abfrage)
 
 Zur Anzeige der vollständigen Unterrichtsdaten wurde die Methode
 `getAllWithDetails()` im `UnterrichtDAO` implementiert.
@@ -1261,8 +1264,9 @@ einzigen Abfrage geladen.
 Der `LEFT JOIN` stellt sicher, dass auch Unterrichtseinheiten ohne
 zugewiesenen Dolmetscher angezeigt werden.
 ```
+--- 
 
-#### 4.3.9 Mapping von Datenbank zu Objekt
+#### 4.2.9 Mapping von Datenbank zu Objekt
 
 Die aus der Datenbank geladenen Daten werden im DAO in Java-Objekte
 der Klasse Unterricht überführt.
@@ -1287,8 +1291,9 @@ während zusätzliche Anzeige-Daten separat gesetzt werden.
 Dieses Vorgehen verhindert eine Überladung des Konstruktors und
 ermöglicht eine flexible Erweiterung des Modells.
 ```
+---
 
-##### 4.3.10 Trennung von Datenzugriff und Darstellung
+##### 4.2.10 Trennung von Datenzugriff und Darstellung
 
 Die Aufbereitung der Daten erfolgt vollständig im DAO,
 während der Controller ausschließlich für die Darstellung zuständig ist.
@@ -1305,6 +1310,109 @@ Diese klare Trennung entspricht dem MVC-Architekturprinzip und verhindert,
 dass Geschäftslogik im Controller implementiert wird.
 Dadurch bleibt der Code wartbar, übersichtlich und erweiterbar.
 ```
+---
+
+##### 4.2.11 Darstellung der Daten im TableView
+
+Im `AdminController` werden die Daten aus der Datenbank im `TableView`
+visualisiert.
+
+Dazu werden die Spalten (`TableColumn`) mit den entsprechenden Werten
+aus dem Model (`Unterricht`) verknüpft.
+
+```java
+colDate.setCellValueFactory(data ->
+    new SimpleStringProperty(data.getValue().getDate().toString()));
+
+colStart.setCellValueFactory(data ->
+    new SimpleStringProperty(data.getValue().getStartTime().toString()));
+
+colKlasse.setCellValueFactory(data ->
+    new SimpleStringProperty(data.getValue().getKlassename()));
+```
+
+`Begründung:
+Die TableColumn greift direkt auf die Getter des Modells zu.
+Dadurch bleibt der Controller schlank und enthält keine eigene Logik
+zur Datenverarbeitung.
+Die Darstellung wird vollständig über das Model gesteuert.`
+
+---
+
+#### 4.2.12 Laden der Daten in die Benutzeroberfläche
+
+Die Daten werden über die Methode `loadData()` aus dem DAO geladen
+und anschließend dem `TableView` übergeben.
+
+```java
+List<Unterricht> list = dao.getAllWithDetails();
+tableUnterricht.setItems(FXCollections.observableArrayList(list));
+```
+
+```text
+Begründung:
+Die Verwendung von ObservableList ist notwendig, damit JavaFX
+Änderungen in der Liste automatisch erkennt und die UI aktualisiert.
+Dadurch wird eine dynamische Darstellung ermöglicht.
+```
+---
+
+#### 4.2.13 Auswahl eines Dolmetschers über ComboBox
+
+Für die Zuweisung eines Dolmetschers wird eine `ComboBox` verwendet,
+die alle verfügbaren Dolmetscher anzeigt.
+
+```text
+Begründung:
+Die Anzeige erfolgt über den vollständigen Namen (Vorname + Nachname),
+da dies für den Benutzer verständlich ist.
+Die Speicherung erfolgt jedoch weiterhin über die ID,
+was eine saubere Trennung zwischen Anzeige und Datenstruktur ermöglicht.
+```
+---
+
+#### 4.2.14 Zuweisung eines Dolmetschers zu einer Unterrichtseinheit
+
+Der Administrator kann einen Dolmetscher auswählen und diesem eine
+Unterrichtseinheit zuweisen.
+
+```java
+Unterricht selected = tableUnterricht.getSelectionModel().getSelectedItem();
+String name = comboDolmetscher.getValue();
+```
+Anschließend wird der passende Dolmetscher anhand des Namens ermittelt
+und die Zuweisung in der Datenbank gespeichert.
+
+```java
+dao.assignDolmetscher(selected.getUnterrichtID(), dolmetscherID);
+```
+
+```text
+Begründung:
+Die Auswahl erfolgt über die Benutzeroberfläche (TableView + ComboBox),
+während die eigentliche Zuweisung über das DAO durchgeführt wird.
+Dies stellt sicher, dass alle Datenbankoperationen zentral im DAO bleiben
+und nicht im Controller implementiert werden.
+```
+---
+
+#### 4.2.15 Aktualisierung der Ansicht nach Änderungen
+
+Nach der Zuweisung wird die Methode `loadData()` erneut aufgerufen,
+um die aktualisierten Daten im TableView darzustellen.
+
+```java
+loadData();
+```
+
+``` text
+Begründung:
+Durch das erneute Laden der Daten wird sichergestellt,
+dass die Benutzeroberfläche immer den aktuellen Zustand der Datenbank
+widerspiegelt.
+Dies verhindert Inkonsistenzen zwischen UI und Datenbank.`
+```
+---
 
 
 
@@ -1314,7 +1422,6 @@ Dadurch bleibt der Code wartbar, übersichtlich und erweiterbar.
 ### Status
 #### Woche 4: in Bearbeitung 🔄
 
-- 🔄 Login-System (LoginView.fxml + LoginController.java)
 - 🔄 Rollenbasierte Navigation
 - 🔄 Administrator-Oberfläche
 - 🔄 Teilnehmer-Sicht
