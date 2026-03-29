@@ -3,6 +3,9 @@ package com.brh.projekt_plan4sign_2026.controller;
 import com.brh.projekt_plan4sign_2026.dao.UserDAO;
 import com.brh.projekt_plan4sign_2026.model.User;
 import com.brh.projekt_plan4sign_2026.util.PasswordUtil;
+import com.brh.projekt_plan4sign_2026.dao.DolmetscherDAO;
+import com.brh.projekt_plan4sign_2026.model.Dolmetscher;
+
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -93,20 +96,21 @@ public class LoginController implements Initializable {
             // View wird als Parent-Node geladen
             Parent root = loader.load();
 
-            // Aktuelles Fenster holen
+            // Nur für Dolmetscher: Controller holen und Objekt übergeben
+            if (user.getRole() == com.brh.projekt_plan4sign_2026.model.Role.DOLMETSCHER) {
+                DolmetscherDAO dolDAO = new DolmetscherDAO();
+                Dolmetscher dolmetscher = dolDAO.getByUserID(user.getUserID());
+
+                DolmetscherController controller = loader.getController();
+                controller.setDolmetscher(dolmetscher);
+            }
+
             Stage stage = (Stage) usernameField.getScene().getWindow();
-
-            // Scene wechseln → neue View anzeigen
             stage.setScene(new Scene(root));
-
-            // Fenster anzeigen
             stage.show();
 
         } catch (Exception e) {
-            // Debug → Fehler sichtbar für Entwickler
             e.printStackTrace();
-
-            // User bekommt verständliche Meldung
             errorLabel.setText("Fehler beim Laden der Ansicht.");
         }
     }

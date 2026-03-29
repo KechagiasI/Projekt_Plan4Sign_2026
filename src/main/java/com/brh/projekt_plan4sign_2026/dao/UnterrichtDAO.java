@@ -67,6 +67,58 @@ public class UnterrichtDAO {
         return unterrichts;
     }
 
+    // Holt alle Unterrichtseinheiten eines Dolmetschers – mit JOIN-Details für die Anzeige
+    public List<Unterricht> getWithDetailsByDolmetscher(int dolmetscherID) throws SQLException {
+
+        List<Unterricht> unterrichts = new ArrayList<>();
+
+        // Gleiche Struktur wie getAllWithDetails(), aber mit WHERE-Filter
+        String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
+                "u.KlasseID, u.FachID, u.DolmetscherID, " +
+                "k.klassename, f.fachname, " +
+                "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername, " +
+                "CONCAT(t.firstname, ' ', t.lastname) AS teilnehmername " +
+                "FROM Unterricht u " +
+                "JOIN Klasse k ON u.KlasseID = k.KlasseID " +
+                "JOIN Fach f ON u.FachID = f.FachID " +
+                "LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID " +
+                "LEFT JOIN Teilnehmer t ON t.KlasseID = u.KlasseID " +
+                "WHERE u.DolmetscherID = ? " +
+                "ORDER BY u.date, u.starttime";
+
+        Connection connection = DatabaseConnection.getConnection();
+
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, dolmetscherID);
+
+        ResultSet resultSet = statement.executeQuery();
+
+        while (resultSet.next()) {
+
+            int unterrichtID = resultSet.getInt("UnterrichtID");
+            LocalDate date = resultSet.getDate("date").toLocalDate();
+            LocalTime starttime = resultSet.getTime("starttime").toLocalTime();
+            LocalTime endtime = resultSet.getTime("endtime").toLocalTime();
+            int klasseID = resultSet.getInt("KlasseID");
+            int fachID = resultSet.getInt("FachID");
+
+            Integer dID = resultSet.getObject("DolmetscherID") != null
+                    ? resultSet.getInt("DolmetscherID") : null;
+
+            Unterricht u = new Unterricht(unterrichtID, date, starttime, endtime, klasseID, fachID, dID);
+
+            u.setKlassename(resultSet.getString("klassename"));
+            u.setFachname(resultSet.getString("fachname"));
+            u.setDolmetschername(resultSet.getString("dolmetschername"));
+            u.setTeilnehmername(resultSet.getString("teilnehmername"));
+
+            unterrichts.add(u);
+        }
+
+        return unterrichts;
+    }
+
     // Holt alle Unterrichtseinheiten aus der Datenbank
     public List<Unterricht> getAll() throws SQLException {
 

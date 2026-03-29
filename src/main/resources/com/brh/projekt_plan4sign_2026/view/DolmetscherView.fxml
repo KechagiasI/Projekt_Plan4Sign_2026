@@ -12,7 +12,20 @@
     <Label text="Dolmetscher – Einsatzplan"
            style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-    <Label text="(wird in der nächsten Aufgabe implementiert)"
-           style="-fx-text-fill: gray;"/>
+    <!-- Begrüßungstext – wird vom Controller befüllt -->
+    <Label fx:id="labelWillkommen"
+           style="-fx-font-size: 14px; -fx-text-fill: #444;"/>
+
+    <!-- Tabelle mit den eigenen Unterrichtseinheiten -->
+    <TableView fx:id="tableUnterricht" prefHeight="400">
+        <columns>
+            <TableColumn fx:id="colDate"       text="Datum"      prefWidth="110"/>
+            <TableColumn fx:id="colStart"      text="Start"      prefWidth="80"/>
+            <TableColumn fx:id="colEnd"        text="Ende"       prefWidth="80"/>
+            <TableColumn fx:id="colKlasse"     text="Klasse"     prefWidth="100"/>
+            <TableColumn fx:id="colFach"       text="Fach"       prefWidth="160"/>
+            <TableColumn fx:id="colTeilnehmer" text="Teilnehmer" prefWidth="170"/>
+        </columns>
+    </TableView>
 
 </VBox>

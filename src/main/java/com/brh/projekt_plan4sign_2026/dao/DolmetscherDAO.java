@@ -133,4 +133,31 @@ public class DolmetscherDAO {
         // Löschung ausführen
         statement.executeUpdate();
     }
+
+    // Sucht einen Dolmetscher anhand der UserID (für Login-Navigation)
+    public Dolmetscher getByUserID(int userID) throws SQLException {
+
+        String sql = "SELECT * FROM Dolmetscher WHERE UserID = ?";
+
+        Connection connection = DatabaseConnection.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, userID);
+
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            int dolmetscherID = resultSet.getInt("DolmetscherID");
+            String firstName = resultSet.getString("firstname");
+            String lastName = resultSet.getString("lastname");
+            String email = resultSet.getString("email");
+            String mobilePhone = resultSet.getString("mobilephone");
+            String comment = resultSet.getString("comment");
+
+            return new Dolmetscher(dolmetscherID, firstName, lastName,
+                    email, mobilePhone, comment, userID);
+        }
+
+        // Kein Dolmetscher mit dieser UserID gefunden
+        return null;
+    }
 }
