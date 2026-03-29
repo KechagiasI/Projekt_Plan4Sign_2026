@@ -12,7 +12,19 @@
     <Label text="Teilnehmer – Stundenplan"
            style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-    <Label text="(wird in der nächsten Aufgabe implementiert)"
-           style="-fx-text-fill: gray;"/>
+    <!-- Begrüßungstext – wird vom Controller befüllt -->
+    <Label fx:id="labelWillkommen"
+           style="-fx-font-size: 14px; -fx-text-fill: #444;"/>
+
+    <!-- Tabelle mit dem Stundenplan der eigenen Klasse -->
+    <TableView fx:id="tableUnterricht" prefHeight="400">
+        <columns>
+            <TableColumn fx:id="colDate"        text="Datum"        prefWidth="110"/>
+            <TableColumn fx:id="colStart"       text="Start"        prefWidth="80"/>
+            <TableColumn fx:id="colEnd"         text="Ende"         prefWidth="80"/>
+            <TableColumn fx:id="colFach"        text="Fach"         prefWidth="200"/>
+            <TableColumn fx:id="colDolmetscher" text="Dolmetscher"  prefWidth="220"/>
+        </columns>
+    </TableView>
 
 </VBox>

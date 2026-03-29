@@ -1,6 +1,8 @@
 package com.brh.projekt_plan4sign_2026.controller;
 
+import com.brh.projekt_plan4sign_2026.dao.TeilnehmerDAO;
 import com.brh.projekt_plan4sign_2026.dao.UserDAO;
+import com.brh.projekt_plan4sign_2026.model.Teilnehmer;
 import com.brh.projekt_plan4sign_2026.model.User;
 import com.brh.projekt_plan4sign_2026.util.PasswordUtil;
 import com.brh.projekt_plan4sign_2026.dao.DolmetscherDAO;
@@ -103,6 +105,14 @@ public class LoginController implements Initializable {
 
                 DolmetscherController controller = loader.getController();
                 controller.setDolmetscher(dolmetscher);
+            }
+
+            if (user.getRole() == com.brh.projekt_plan4sign_2026.model.Role.TEILNEHMER) {
+                TeilnehmerDAO teilDAO = new TeilnehmerDAO();
+                Teilnehmer teilnehmer = teilDAO.getByUserID(user.getUserID());
+
+                TeilnehmerController controller = loader.getController();
+                controller.setTeilnehmer(teilnehmer);
             }
 
             Stage stage = (Stage) usernameField.getScene().getWindow();

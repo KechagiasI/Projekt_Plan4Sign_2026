@@ -158,4 +158,32 @@ public class TeilnehmerDAO {
         // Löschung ausführen
         statement.executeUpdate();
     }
+
+    // Sucht einen Teilnehmer anhand der UserID (für Login-Navigation)
+    public Teilnehmer getByUserID(int userID) throws SQLException {
+
+        String sql = "SELECT * FROM Teilnehmer WHERE UserID = ?";
+
+        Connection connection = DatabaseConnection.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setInt(1, userID);
+
+        ResultSet resultSet = statement.executeQuery();
+
+        if (resultSet.next()) {
+            int teilnehmerID = resultSet.getInt("TeilnehmerID");
+            String firstName = resultSet.getString("firstname");
+            String lastName = resultSet.getString("lastname");
+            String email = resultSet.getString("email");
+            String mobilePhone = resultSet.getString("mobilephone");
+            String comment = resultSet.getString("comment");
+            int klasseID = resultSet.getInt("KlasseID");
+
+            return new Teilnehmer(teilnehmerID, firstName, lastName,
+                    email, mobilePhone, comment, klasseID, userID);
+        }
+
+        // Kein Teilnehmer mit dieser UserID gefunden
+        return null;
+    }
 }
