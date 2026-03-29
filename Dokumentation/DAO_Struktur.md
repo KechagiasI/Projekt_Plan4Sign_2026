@@ -27,7 +27,7 @@
 6. Ergebnis verarbeiten (nur bei SELECT)
 ```
 
-👉 Das Ist Wichtig!!!!
+👉 Wichtig: Diese Schritte gelten für alle DAO-Methoden.
 
 ---
 
@@ -42,13 +42,12 @@ Statement stmt = conn.createStatement();
 ResultSet rs = stmt.executeQuery(sql);
 
 while(rs.next()) {
-    // Daten lesen
-}
+        // Daten lesen
+        }
 ```
 
-> **Hinweis:** Für `getAll()` ohne Parameter wird `Statement` verwendet.
-> Sobald ein Parameter (z. B. eine ID) übergeben wird,
-> ist `PreparedStatement` Pflicht (SQL-Injection-Schutz).
+> **Hinweis:** `Statement` kann verwendet werden – im Projekt wird jedoch
+> aus Konsistenz- und Sicherheitsgründen **immer** `PreparedStatement` genutzt.
 
 ---
 
@@ -77,11 +76,13 @@ verwendet man JOINs direkt im SQL.
 ```java
 String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
              "k.klassename, f.fachname, " +
-             "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername " +
+             "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername, " +
+             "CONCAT(t.firstname, ' ', t.lastname) AS teilnehmername " +
              "FROM Unterricht u " +
              "JOIN Klasse k ON u.KlasseID = k.KlasseID " +
              "JOIN Fach f ON u.FachID = f.FachID " +
              "LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID " +
+             "LEFT JOIN Teilnehmer t ON t.KlasseID = u.KlasseID " +
              "WHERE u.DolmetscherID = ? " +
              "ORDER BY u.date, u.starttime";
 
@@ -95,6 +96,7 @@ while(rs.next()) {
     u.setKlassename(rs.getString("klassename"));
     u.setFachname(rs.getString("fachname"));
     u.setDolmetschername(rs.getString("dolmetschername"));
+    u.setTeilnehmername(rs.getString("teilnehmername"));
 }
 ```
 
@@ -188,6 +190,7 @@ Unterricht u = new Unterricht(unterrichtID, date, starttime, endtime, klasseID, 
 u.setKlassename(resultSet.getString("klassename"));
 u.setFachname(resultSet.getString("fachname"));
 u.setDolmetschername(resultSet.getString("dolmetschername"));
+u.setTeilnehmername(resultSet.getString("teilnehmername"));
 ```
 
 > **Warum zwei Schritte?**
@@ -215,6 +218,9 @@ u.setDolmetschername(resultSet.getString("dolmetschername"));
 Connection conn = DatabaseConnection.getConnection();
 ```
 
+> **Hinweis:** Das Singleton-Muster wird **projektintern** verwendet.
+> In größeren Anwendungen wird ein Connection Pool (z. B. HikariCP) empfohlen.
+
 ---
 
 # 🔷 10. DAO Template (Copy & Reuse)
@@ -227,8 +233,8 @@ public class EntityDAO {
 
         String sql = "SELECT * FROM TABLE";
         Connection conn = DatabaseConnection.getConnection();
-        Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery(sql);
+        PreparedStatement stmt = conn.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
 
         while(rs.next()) {
             list.add(new Entity(...));

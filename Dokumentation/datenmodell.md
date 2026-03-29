@@ -227,6 +227,8 @@ Speichert Zeitblockierungen eines Dolmetschers.
 
 Ein Dolmetscher kann mehrere Availability-Einträge besitzen (1:n).
 
+„Die Availability bildet die Grundlage für die spätere Konflikterkennung (z.B. Doppelbelegung und zeitliche Überschneidungen).“
+
 ---
 
 ## Beziehungen im Überblick

@@ -1,9 +1,10 @@
 ### Projekt
 Projekt_DoIT – Plan4Sign - Stundenplan mit Dolmetscher-Zuweisung
 
-# Dokumentation – Woche 1 
+# Dokumentation – Woche 1
 
 Analyse & Projektvorbereitung (35 h)
+
 ---
 
 # Ziel der Woche
@@ -398,7 +399,6 @@ Zeitblockierungen eines Dolmetschers.
 
 ---
 
-
 # Dokumentation – Woche 3
 
 ## Ziel der Woche
@@ -409,21 +409,10 @@ Abschluss der JDBC-Anbindung und Implementierung der DAO-Klassen sowie Stabilisi
 
 ### 3.1 Architekturentscheidung
 
-Für die Umsetzung der Anwendung **„DoIT – Planungs- und Organisationssoftware"** wurde die  
+Für die Umsetzung der Anwendung **„DoIT – Planungs- und Organisationssoftware"** wurde die
 **Model-View-Controller (MVC)-Architektur** gewählt.
 
 #### Begründung
-
-Die Anwendung verarbeitet folgende fachliche Entitäten:
-
-- User
-- Bereich
-- Fach
-- Klasse
-- Teilnehmer
-- Dolmetscher
-- Unterricht
-- Availability
 
 Aufgrund der klaren Struktur, des rollenbasierten Login-Systems und der notwendigen Trennung von Präsentation, Logik und Datenzugriff wurde MVC als geeignete Architektur gewählt.
 
@@ -445,29 +434,15 @@ Die Anwendung ist in folgende Packages unterteilt:
 src/main/java/com/brh/
 │
 ├── model/       ← Entity-Klassen (User, Dolmetscher, usw.)
-├── view/        ← FXML-Controller (JavaFX-Oberfläche)
+├── view/        ← FXML-Dateien (JavaFX-Oberfläche)
 ├── controller/  ← Anwendungslogik
 ├── dao/         ← Datenbankzugriff (JDBC)
 └── util/        ← Hilfsmittel (z. B. DatabaseConnection)
 ```
 
-#### Begründung
-
-Die Aufteilung in Packages entspricht der MVC-Architektur und sorgt für eine klare Trennung der Verantwortlichkeiten:
-
-- `model` Entity-Klassen (User, Dolmetscher, usw.)
-- `view` FXML-Controller (JavaFX-Oberfläche)
-- `controller` Anwendungslogik
-- `dao` Datenbankzugriff (JDBC)
-- `util` Hilfsmittel (z. B. DatabaseConnection)
+Die Aufteilung entspricht der MVC-Architektur und sorgt für eine klare Trennung der Verantwortlichkeiten zwischen Datenstruktur, Datenbankzugriff, Anwendungslogik und Benutzeroberfläche.
 
 ---
-- model enthält ausschließlich die Datenstruktur
-- view enthält ausschließlich die Benutzeroberfläche
-- controller enthält die Anwendungslogik
-- dao enthält den gesamten Datenbankzugriff
-- util enthält gemeinsam genutzte Hilfsmittel
-
 
 ### 3.3 Entity-Klassen
 
@@ -475,7 +450,7 @@ Für jede Entität des ER-Modells wurde eine entsprechende Java-Klasse im Packag
 
 #### Role.java
 
-Enum-Klasse zur Abbildung der Benutzerrollen.  
+Enum-Klasse zur Abbildung der Benutzerrollen.
 Entspricht dem `ENUM`-Typ in der Datenbanktabelle `User`.
 
 ```
@@ -489,131 +464,66 @@ Werte: ADMIN, DOLMETSCHER, TEILNEHMER
 
 #### User.java
 
-Speichert Login-Daten und Rolleninformationen.
-
-Attribute:
-
-- `int userID`
-- `String username`
-- `String passwordHash`
-- `Role role`
+Attribute: `int userID`, `String username`, `String passwordHash`, `Role role`
 
 ---
 
 #### Bereich.java
 
-Repräsentiert einen fachlichen Bereich.
-
-Attribute:
-
-- `int bereichID`
-- `String bereichName`
+Attribute: `int bereichID`, `String bereichName`
 
 ---
 
 #### Fach.java
 
-Repräsentiert ein konkretes Unterrichtsfach.
+Attribute: `int fachID`, `String fachName`, `boolean isInterpreterRelevant`, `int bereichID`
 
-Attribute:
-
-- `int fachID`
-- `String fachName`
-- `boolean isInterpreterRelevant`
-- `int bereichID`
-
-> **Entscheidung:** Das Attribut `bereichID` wird als `int` gespeichert (Foreign Key),
-> nicht als `Bereich`-Objekt. Die Daten werden über JDBC geladen,
-> daher wird auf Objekt-Referenzen verzichtet.
+> **Entscheidung:** `bereichID` wird als `int` gespeichert (Foreign Key), nicht als `Bereich`-Objekt,
+> da die Daten über JDBC geladen werden und auf Objekt-Referenzen verzichtet wird.
 
 ---
 
 #### Klasse.java
 
-Repräsentiert eine Schulklasse.
-
-Attribute:
-
-- `int klasseID`
-- `String klasseName`
-- `String room`
+Attribute: `int klasseID`, `String klasseName`, `String room`
 
 ---
 
 #### Teilnehmer.java
 
-Repräsentiert einen hörgeschädigten Teilnehmer.
-
-Attribute:
-
-- `int teilnehmerID`
-- `String firstName`
-- `String lastName`
-- `String email`
-- `String mobilePhone`
-- `String comment`
-- `int klasseID`
-- `int userID`
+Attribute: `int teilnehmerID`, `String firstName`, `String lastName`, `String email`,
+`String mobilePhone`, `String comment`, `int klasseID`, `int userID`
 
 ---
 
 #### Dolmetscher.java
 
-Repräsentiert einen Dolmetscher.
-
-Attribute:
-
-- `int dolmetscherID`
-- `String firstName`
-- `String lastName`
-- `String email`
-- `String mobilePhone`
-- `String comment`
-- `int userID`
+Attribute: `int dolmetscherID`, `String firstName`, `String lastName`, `String email`,
+`String mobilePhone`, `String comment`, `int userID`
 
 ---
 
 #### Unterricht.java
 
-Repräsentiert eine einzelne Unterrichtseinheit.
+Attribute: `int unterrichtID`, `LocalDate date`, `LocalTime startTime`, `LocalTime endTime`,
+`int klasseID`, `int fachID`, `Integer dolmetscherID`
 
-Attribute:
-
-- `int unterrichtID`
-- `LocalDate date`
-- `LocalTime startTime`
-- `LocalTime endTime`
-- `int klasseID`
-- `int fachID`
-- `Integer dolmetscherID`
-
-> **Entscheidung:** `dolmetscherID` ist vom Typ `Integer` (nicht `int`),
-> da der Wert `NULL` sein kann, wenn kein Dolmetscher zugewiesen ist.
+> **Entscheidung:** `dolmetscherID` ist vom Typ `Integer`, da der Wert `NULL` sein kann,
+> wenn kein Dolmetscher zugewiesen ist.
 
 > **Entscheidung:** `LocalDate` und `LocalTime` wurden anstelle von `java.sql.Date`
-> und `java.sql.Time` verwendet, da diese modernen Typen seit Java 8 empfohlen werden
-> und keine automatische Konvertierung der Datumswerte vornehmen.
+> und `java.sql.Time` verwendet, da diese modernen Typen seit Java 8 empfohlen werden.
 
 ---
 
 #### Availability.java
 
-Speichert Zeitblockierungen eines Dolmetschers.
+Attribute: `int availabilityID`, `String availabilityType`, `LocalDate date`,
+`LocalTime startTime`, `LocalTime endTime`, `LocalDate dateFrom`, `LocalDate dateTo`,
+`String comment`, `int dolmetscherID`
 
-Attribute:
-
-- `int availabilityID`
-- `String availabilityType`
-- `LocalDate date`
-- `LocalTime startTime`
-- `LocalTime endTime`
-- `LocalDate dateFrom`
-- `LocalDate dateTo`
-- `String comment`
-- `int dolmetscherID`
-
-> **Entscheidung:** Alle optionalen Datums- und Zeitfelder sind als `LocalDate` bzw.
-> `LocalTime` deklariert und können `null` sein, entsprechend der Datenbankdefinition.
+> **Entscheidung:** Alle optionalen Datums- und Zeitfelder können `null` sein,
+> entsprechend der Datenbankdefinition.
 
 ---
 
@@ -623,8 +533,6 @@ Für die Verbindung zwischen Java und der MySQL-Datenbank wurde JDBC verwendet.
 
 #### MySQL Connector/J
 
-Der MySQL JDBC-Treiber wurde als Maven-Dependency in der `pom.xml` eingebunden:
-
 ```XML
 <dependency>
     <groupId>mysql</groupId>
@@ -632,86 +540,58 @@ Der MySQL JDBC-Treiber wurde als Maven-Dependency in der `pom.xml` eingebunden:
     <version>8.0.33</version>
 </dependency>
 ```
+
 #### DatabaseConnection.java
-Die Klasse DatabaseConnection im Package util stellt die Verbindung zur Datenbank her.
-Umgesetzte Konzepte:
 
-- Singleton-Prinzip: Es existiert zu jedem Zeitpunkt nur eine einzige Datenbankverbindung
-- Privater Konstruktor: Verhindert die Instanziierung der Klasse von außen
-- getConnection() gibt die bestehende Verbindung zurück oder erstellt eine neue
-- closeConnection() schließt die Verbindung sicher
+Die Klasse `DatabaseConnection` im Package `util` stellt die Verbindung zur Datenbank her
+und setzt das Singleton-Prinzip um: Es existiert zu jedem Zeitpunkt nur eine einzige Datenbankverbindung.
 
-#### Verbindungsparameter:
+Verbindungsparameter:
 
-- URL: jdbc:mysql://localhost:3324/projekt_doit
+- URL: `jdbc:mysql://localhost:3324/projekt_doit`
 - Port: 3324 (MySQL läuft unter WSL)
-- Datenbank: projekt_doit
+- Datenbank: `projekt_doit`
 
-```java
-Verbindung erfolgreich!
-```
-
-`CODE in package util -> DatabaseConnection.java`
-
-```java
-import java.sql.Connection;
-......
-
-public class DatabaseConnection {
-
-    // JDBC-URL: mysql = Treiber, localhost = Server, 3324 = Port, projekt_doit = Datenbankname
-    // (Standard-Port ist 3306 -> prüfen, ob 3324 korrekt ist)
-    private static final String URL = "jdbc:mysql://localhost:3324/projekt_doit";
-    // Datenbank-Benutzername
-    private static final String USER = "root";
-    // Datenbank-Passwort (Hinweis: in echten Projekten nicht im Code speichern!)
-    private static final String PASSWORD = "1234";
-    // Singleton-Verbindung: Es existiert nur eine Connection im gesamten Programm
-    private static Connection connection = null;
-    // Privater Konstruktor verhindert Instanziierung (Utility-/Singleton-Klasse)
-    private DatabaseConnection() {}
-    
-    ...........
-
-```
-
+---
 
 ### 3.5 DAO-Klassen
-Für jede Entität wurde eine DAO-Klasse (Data Access Object) im Package dao erstellt.
-Jede DAO-Klasse implementiert die grundlegenden CRUD-Operationen:
 
-- Create → INSERT (insert())
-- Read → SELECT (getAll(), getByID(), getByKlasse() usw.)
-- Update → UPDATE (assignDolmetscher())
-- Delete → DELETE (delete())
+Für jede Entität wurde eine DAO-Klasse (Data Access Object) im Package `dao` erstellt.
 
-### Übersicht der DAO-Klassen
+> **Entscheidung:** `PreparedStatement` wurde verwendet, wo Parameter übergeben werden,
+> um SQL-Injection zu verhindern. `NULL`-Werte werden über `getObject()` geprüft,
+> um `NullPointerExceptions` zu vermeiden.
 
-| DAO-Klasse       | Methoden                                                                             |
-|------------------|--------------------------------------------------------------------------------------|
-| BereichDAO       | getAll(), insert(), delete()                                                         |
-| KlasseDAO        | getAll(), insert(), delete()                                                         |
-| FachDAO          | getAll(), getByBereich(), insert(), delete()                                         |
-| UserDAO          | getAll(), getByUsername(), insert(), delete()                                        |
-| DolmetscherDAO   | getAll(), getByID(), insert(), delete()                                              |
-| TeilnehmerDAO    | getAll(), getByKlasse(), insert(), delete()                                          |
-| UnterrichtDAO    | getAll(), getByKlasse(), getByDolmetscher(), insert(), assignDolmetscher(), delete() |
-| AvailabilityDAO  | getByDolmetscher(), insert(), delete()                                               |
+#### Basis-CRUD-Methoden
 
+| DAO-Klasse      | Methoden                                          |
+|-----------------|---------------------------------------------------|
+| BereichDAO      | getAll(), insert(), delete()                      |
+| KlasseDAO       | getAll(), insert(), delete()                      |
+| FachDAO         | getAll(), getByBereich(), insert(), delete()      |
+| UserDAO         | getAll(), getByUsername(), insert(), delete()     |
+| DolmetscherDAO  | getAll(), getByID(), insert(), delete()           |
+| TeilnehmerDAO   | getAll(), getByKlasse(), insert(), delete()       |
+| UnterrichtDAO   | getAll(), insert(), assignDolmetscher(), delete() |
+| AvailabilityDAO | insert(), delete()                                |
 
-> Entscheidung: PreparedStatement wurde anstelle von Statement verwendet,
-> wo Benutzereingaben in die SQL-Abfrage einfließen, um SQL-Injection zu verhindern.
-> Entscheidung: NULL-Werte werden mit getObject() geprüft bevor sie mit
-> toLocalDate() oder toLocalTime() konvertiert werden, um NullPointerExceptions zu vermeiden.
+#### Erweiterte Methoden (JOINs, Filter, Logik)
+
+| DAO-Klasse      | Methoden                                                                                       |
+|-----------------|------------------------------------------------------------------------------------------------|
+| DolmetscherDAO  | getByUserID()                                                                                  |
+| TeilnehmerDAO   | getByUserID()                                                                                  |
+| UnterrichtDAO   | getAllWithDetails(), getByDolmetscher(), getByKlasse(), getWithDetailsByDolmetscher(), getWithDetailsByKlasse() |
+| AvailabilityDAO | getByDolmetscher(), isAvailable()                                                              |
 
 ---
 
 ### 3.6 Versionsverwaltung
+
 Das Projekt wurde mit einem privaten GitHub-Repository verknüpft.
 
-- Lokales Git-Repository war bereits beim Erstellen des Projekts initialisiert
-- Remote-Repository wurde auf GitHub unter dem Namen Projekt_Plan4Sign_2026 erstellt
-- Verbindung wurde über IntelliJ IDEA (Git → Manage Remotes) hergestellt
+- Remote-Repository: `Projekt_Plan4Sign_2026`
+- Verbindung über IntelliJ IDEA (Git → Manage Remotes)
 
 Commits dieser Woche:
 
@@ -721,19 +601,21 @@ Commits dieser Woche:
 - Fix model classes: `Fach, Unterricht, Availability - Add DAO classes`
 
 ---
+
 #### Referenzen
 1. `https://mvnrepository.com/artifact/mysql/mysql-connector-java/8.0.33`
 2. `https://stackoverflow.com/questions/2839321/connect-java-to-a-mysql-database`
 3. `https://stackoverflow.com/questions/74183544/get-connection-with-singleton-pattern`
-4. `https://github.com/mysql/mysql-connector-j?utm_source=chatgpt.com`
+4. `https://github.com/mysql/mysql-connector-j`
 5. `https://dev.mysql.com/doc/connector-j/en/`
----
 
+---
 
 ### Status
 #### Woche 3: abgeschlossen ✅
 
-----
+---
+
 # Dokumentation – Woche 4
 
 ## 4. Woche 4 – Login-System, Rollennavigation & JavaFX-Oberfläche
@@ -741,15 +623,13 @@ Commits dieser Woche:
 ## Ziel der Woche
 
 Implementierung des Login-Systems mit sicherer Passwortverschlüsselung,
-rollenbasierter Navigation sowie Vorbereitung der JavaFX-Oberflächen.
+rollenbasierter Navigation und der rollenspezifischen JavaFX-Oberflächen.
 
 ---
 
 ### 4.1 Projektkonfiguration
 
 #### 4.1.1 pom.xml – Anpassungen
-
-Folgende Änderungen wurden an der `pom.xml` vorgenommen:
 
 **BCrypt-Dependency hinzugefügt:**
 ```xml
@@ -760,282 +640,75 @@ Folgende Änderungen wurden an der `pom.xml` vorgenommen:
 </dependency>
 ```
 
-> **Begründung:** Passwörter dürfen niemals im Klartext gespeichert werden.
-> BCrypt ist ein bewährter Hashing-Algorithmus mit automatischem Salt,
-> der speziell für Passwörter entwickelt wurde.
+> **Begründung:** Passwörter werden mit BCrypt gehasht, da der Algorithmus
+> speziell für Passwort-Hashing entwickelt wurde und automatisch einen Salt generiert.
 
-**JavaFX-Version als Property zentralisiert:**
-```xml
-<properties>
-    <javafx.version>21.0.6</javafx.version>
-</properties>
-```
+**Weitere Anpassungen:**
 
-> **Begründung:** Durch die Verwendung einer zentralen Property muss
-> die Version nur an einer Stelle gepflegt werden.
-
-**Java-Compiler-Version korrigiert:**
-```xml
-<source>21</source>
-<target>21</target>
-```
-
-> **Begründung:** Die Compiler-Version muss mit dem installierten JDK übereinstimmen.
-> Die vorherige Einstellung (23) führte zu Inkompatibilitäten.
-
-**mainClass im javafx-maven-plugin aktualisiert:**
-```xml
-<mainClass>
-    com.brh.projekt_plan4sign_2026/com.brh.projekt_plan4sign_2026.Launcher
-</mainClass>
-```
-
-> **Begründung:** `HelloApplication` war ein vom IntelliJ-Template generiertes
-> Beispiel und wird durch `Launcher` als echten Einstiegspunkt ersetzt.
+- JavaFX-Version als zentrale Property (`21.0.6`)
+- Java-Compiler-Version auf 21 korrigiert (vorher: 23)
+- `mainClass` auf `Launcher` aktualisiert (ersetzt das IntelliJ-Template `HelloApplication`)
 
 ---
 
 #### 4.1.2 module-info.java – Anpassungen
 
-Das Java Module System erfordert eine explizite Deklaration aller verwendeten
-Module sowie der Packages, auf die andere Module Zugriff erhalten dürfen.
 ```java
 module com.brh.projekt_plan4sign_2026 {
-
-    // JavaFX – wird für UI-Komponenten und FXML-Laden benötigt
     requires javafx.controls;
     requires javafx.fxml;
-
-    // Datenbankzugriff über JDBC
     requires java.sql;
-
-    // BCrypt – für die sichere Passwort-Verschlüsselung
     requires jbcrypt;
 
-    // opens: der FXMLLoader benötigt Reflection-Zugriff auf die Controller-Klassen
-    // Ohne diese Zeile → IllegalAccessException zur Laufzeit
     opens com.brh.projekt_plan4sign_2026 to javafx.fxml;
     opens com.brh.projekt_plan4sign_2026.controller to javafx.fxml;
+    opens com.brh.projekt_plan4sign_2026.util to javafx.fxml;
 
-    // exports: macht die Packages für andere Module sichtbar
     exports com.brh.projekt_plan4sign_2026;
     exports com.brh.projekt_plan4sign_2026.controller;
+    exports com.brh.projekt_plan4sign_2026.util;
 }
 ```
-
-**Erklärung der Direktiven:**
-
-| Direktive | Bedeutung |
-|-----------|-----------|
-| `requires` | Deklariert ein externes Modul als Abhängigkeit |
-| `opens ... to` | Erlaubt Reflection-Zugriff zur Laufzeit (z. B. für FXMLLoader) |
-| `exports` | Macht ein Package für andere Module sichtbar |
 
 > **Begründung `requires java.sql`:** Der MySQL JDBC-Treiber wird über den
-> Java ServiceLoader-Mechanismus automatisch zur Laufzeit geladen.
-> Ein explizites `requires mysql...` ist daher nicht notwendig.
+> ServiceLoader-Mechanismus automatisch geladen – ein explizites `requires mysql...`
+> ist nicht notwendig.
 
-> **Begründung `opens controller to javafx.fxml`:** Der FXMLLoader verwendet
-> Reflection, um `@FXML`-annotierte Felder in Controller-Klassen zu injizieren.
-> Ohne `opens` wirft die JVM eine `IllegalAccessException` zur Laufzeit.
-
----
-
-#### 4.1.3 Role.java – Korrektur
-
-Der Java-Enum `Role` wurde an die MySQL-ENUM-Werte angepasst:
-```java
-public enum Role {
-    ADMIN,
-    DOLMETSCHER,
-    TEILNEHMER
-}
-```
-
-> **Begründung:** Die Datenbank ist die einzige Quelle der Wahrheit (Single Source of Truth).
-> Der Java-Enum muss die DB-Werte exakt widerspiegeln, da bei `Role.valueOf("ADMIN")`
-> ein `IllegalArgumentException` geworfen wird, wenn die Werte nicht übereinstimmen.
+> **Entscheidung:** Der MySQL Connector wurde bewusst auf Version `8.0.33` belassen,
+> da die bestehende Version funktionsfähig war und eine unnötige Änderung vermieden werden sollte.
 
 ---
 
-#### 4.1.4 Debugging – module-info.java (MySQL Module Name)
+#### 4.1.3 PasswordUtil.java – Passwort-Hashing mit BCrypt
 
-Bei der Konfiguration der `module-info.java` wurde versucht, den MySQL JDBC-Treiber
-explizit als Modul zu deklarieren. Dabei traten folgende Fehler auf:
-
-**Versuch 1:**
 ```java
-requires com.mysql.jdbc;
-```
-```
-java: Modul nicht gefunden: com.mysql.jdbc
+public static String hash(String plainPassword) {
+    return BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
+}
+
+public static boolean verify(String plainPassword, String hashedPassword) {
+    return BCrypt.checkpw(plainPassword, hashedPassword);
+}
 ```
 
-**Versuch 2:**
-```java
-requires mysql.connector.java;
-```
-```
-java: Modul nicht gefunden: mysql.connector.java
-```
-
-**Lösung:**
-Die `requires`-Direktive für MySQL wurde vollständig entfernt.
-
-> **Begründung:** Der MySQL JDBC-Treiber `mysql-connector-java 8.0.33` ist ein
-> sogenanntes **Automatic Module** – er besitzt keinen offiziellen Modul-Namen
-> und muss daher nicht explizit deklariert werden.
-> Java lädt den Treiber automatisch zur Laufzeit über den **ServiceLoader-Mechanismus**
-> (`java.sql.Driver`). Die Direktive `requires java.sql` ist ausreichend.
-
-> **Entscheidung:** Der MySQL Connector wurde bewusst nicht auf die neuere Version
-> `mysql-connector-j 8.3.0` aktualisiert, da die bestehende Version `8.0.33`
-> bereits funktionsfähig war und eine unnötige Änderung vermieden werden sollte.
+> **Entscheidung:** Cost Factor 12 wurde gewählt, da er ein ausgewogenes
+> Verhältnis zwischen Sicherheit und Berechnungszeit bietet.
 
 ---
 
-#### 4.1.5 MainController.java – Platzhalter
+#### 4.1.4 UserDAO.java – Überarbeitung
 
-Da `module-info.java` das Package `controller` mit `opens` und `exports` deklariert,
-erwartet der Java-Compiler mindestens eine Klasse in diesem Package.
-Da die Controller-Klassen noch nicht implementiert waren, führte dies zu einem
-Compile-Fehler.
+Die bestehende Implementierung von `UserDAO` wurde um folgende Punkte ergänzt:
 
-**Lösung:** Erstellung einer leeren Platzhalter-Klasse:
-```java
-package com.brh.projekt_plan4sign_2026.controller;
-
-// Platzhalter – wird in der nächsten Aufgabe implementiert
-public class MainController {
-}
-```
-
-> **Begründung:** Das Java Module System validiert beim Kompilieren,
-> ob die in `module-info.java` deklarierten Packages tatsächlich existieren.
-> Ein leeres Package ohne Klassen wird nicht als gültig erkannt.
-> Der Platzhalter wird ersetzt, sobald die echten Controller implementiert sind.
-
-#### 4.1.6 PasswordUtil.java – Passwort-Hashing mit BCrypt
-
-Für die sichere Speicherung von Passwörtern wurde die Klasse `PasswordUtil`
-im Package `util` erstellt.
-```java
-package com.brh.projekt_plan4sign_2026.util;
-
-import org.mindrot.jbcrypt.BCrypt;
-
-public class PasswordUtil {
-
-    // Privater Konstruktor – diese Klasse soll nicht instanziiert werden
-    private PasswordUtil() {}
-
-    // Erstellt einen sicheren Hash aus dem Klartext-Passwort
-    // workload 12 = Stärke des Hashing-Algorithmus (höher = sicherer, aber langsamer)
-    public static String hash(String plainPassword) {
-        return BCrypt.hashpw(plainPassword, BCrypt.gensalt(12));
-    }
-
-    // Vergleicht ein Klartext-Passwort mit einem gespeicherten Hash
-    // Gibt true zurück, wenn das Passwort übereinstimmt
-    public static boolean verify(String plainPassword, String hashedPassword) {
-        return BCrypt.checkpw(plainPassword, hashedPassword);
-    }
-}
-```
-
-> **Entscheidung:** Passwörter werden niemals im Klartext gespeichert.
-> BCrypt wurde gewählt, da der Algorithmus speziell für Passwort-Hashing
-> entwickelt wurde und automatisch einen zufälligen Salt generiert.
-
-| Element                  | Begründung                                                            |
-|--------------------------|-----------------------------------------------------------------------|
-| `private PasswordUtil()` | Utility-Klasse – keine Instanziierung notwendig                       |
-| `BCrypt.gensalt(12)`     | Cost Factor 12 – jede Erhöhung um 1 verdoppelt die Berechnungszeit    |
-| `checkpw()`              | Der Salt ist im Hash enthalten – keine separate Speicherung notwendig |
-| `static` Methoden        | Aufruf direkt über `PasswordUtil.hash(...)` ohne `new`                |
+- **try-with-resources**: Datenbankressourcen werden automatisch geschlossen
+- **Optional\<User\>**: `getByUsername()` gibt `Optional` zurück, um explizite Null-Behandlung zu erzwingen
+- **Passwort-Hashing in insert()**: Passwörter werden zentral in der DAO-Schicht gehasht
 
 ---
-
-#### 4.1.7 module-info.java – Erweiterung um util Package
-
-Nach der Erstellung von `PasswordUtil.java` wurde `module-info.java`
-um das `util` Package erweitert:
-```java
-opens com.brh.projekt_plan4sign_2026.util to javafx.fxml;
-exports com.brh.projekt_plan4sign_2026.util;
-```
-
-> **Begründung:** Das Java Module System erfordert, dass jedes Package,
-> das von anderen Klassen verwendet wird, explizit exportiert wird.
-> Ohne `exports util` wäre `PasswordUtil` außerhalb des Packages nicht sichtbar.
-
-- UserDAO.java – try-with-resources, Optional<User>, Passwort-Hashing
-
-#### 4.1.8 UserDAO.java – Überarbeitung
-
-Die bestehende Skeleton-Implementierung von `UserDAO` wurde überarbeitet
-und um folgende Punkte ergänzt:
-
-**Änderung 1 – try-with-resources**
-
-Alle Datenbankressourcen (`Connection`, `PreparedStatement`, `ResultSet`)
-werden jetzt mit `try-with-resources` verwaltet:
-```java
-try (Connection connection = DatabaseConnection.getConnection();
-     PreparedStatement statement = connection.prepareStatement(sql)) {
-    ...
-}
-```
-
-> **Begründung:** Ohne explizites Schließen bleiben Datenbankverbindungen offen
-> (Memory Leak). `try-with-resources` schließt alle Ressourcen automatisch –
-> auch im Fehlerfall.
-
-**Änderung 2 – Optional\<User\> statt null**
-
-`getByUsername()` gibt jetzt `Optional<User>` zurück:
-```java
-public Optional<User> getByUsername(String username) throws SQLException
-```
-
-> **Begründung:** Die Rückgabe von `null` ist fehleranfällig –
-> ein vergessener `null`-Check führt zur `NullPointerException`.
-> `Optional<User>` zwingt den Aufrufer, den Fall „kein Benutzer gefunden"
-> explizit zu behandeln.
-
-**Änderung 3 – Passwort-Hashing in insert()**
-
-Das Passwort wird vor dem Speichern automatisch gehasht:
-```java
-statement.setString(2, PasswordUtil.hash(user.getPasswordHash()));
-```
-
-> **Begründung:** Passwörter dürfen niemals im Klartext in der Datenbank
-> gespeichert werden. Das Hashing erfolgt zentral in der DAO-Schicht,
-> sodass es nicht vergessen werden kann.
-
-**Änderung 4 – PreparedStatement in getAll()**
-
-`Statement` wurde durch `PreparedStatement` ersetzt.
-
-> **Begründung:** `PreparedStatement` ist auch ohne Parameter Best Practice,
-> da es konsistenter und sicherer ist.
-
-
-Zusammenfassung 
-
-Im neuen Code wurden mehrere Verbesserungen umgesetzt:
-Erstens wurde try-with-resources verwendet, um Ressourcen automatisch zu schließen.
-Zweitens wurde Optional statt null eingeführt, um Fehler zu vermeiden.
-Drittens werden Passwörter jetzt mit BCrypt gehasht, um die Sicherheit zu erhöhen.
-Und viertens wird PreparedStatement verwendet, um SQL-Injection zu verhindern.
---- 
 
 #### 4.2 Login-System
 
 ##### 4.2.1 Übersicht
-
-Das Login-System besteht aus folgenden Komponenten:
 
 | Datei                  | Package            | Aufgabe                               |
 |------------------------|--------------------|---------------------------------------|
@@ -1046,36 +719,7 @@ Das Login-System besteht aus folgenden Komponenten:
 
 ---
 
-##### 4.2.2 LoginView.fxml
-
-Die Login-Oberfläche wurde als FXML-Datei erstellt und enthält folgende Elemente:
-
-- `TextField` (fx:id="usernameField") – Eingabe des Benutzernamens
-- `PasswordField` (fx:id="passwordField") – Eingabe des Passworts
-- `Label` (fx:id="errorLabel") – Anzeige von Fehlermeldungen
-- `Button` – Auslöser für den Login-Vorgang (`onAction="#handleLogin"`)
-```xml
-<VBox xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.brh.projekt_plan4sign_2026.controller.LoginController"
-      alignment="CENTER"
-      spacing="15"
-      prefWidth="400"
-      prefHeight="350">
-    ...
-</VBox>
-```
-
-> **Entscheidung:** FXML-Dateien werden im `resources`-Verzeichnis abgelegt,
-> da sie keine Java-Klassen sind und vom `FXMLLoader` zur Laufzeit geladen werden.
-> Der Pfad lautet: `resources/com/brh/projekt_plan4sign_2026/view/`
-
----
-
-##### 4.2.3 LoginController.java
-
-Der Controller verarbeitet die Login-Eingaben und navigiert zur rollenbasierten Ansicht.
-
-**Ablauf des Login-Vorgangs:**
+##### 4.2.2 Ablauf des Login-Vorgangs
 
 1. Eingaben aus den FXML-Feldern lesen
 2. Prüfen ob Felder leer sind
@@ -1083,611 +727,189 @@ Der Controller verarbeitet die Login-Eingaben und navigiert zur rollenbasierten 
 4. Passwort mit `PasswordUtil.verify()` prüfen
 5. Bei Erfolg → Navigation zur rollenbasierten Ansicht
 6. Bei Fehler → Fehlermeldung im `errorLabel`
-```java
-@FXML
-private void handleLogin() {
-    String username = usernameField.getText().trim();
-    String password = passwordField.getText();
-
-    if (username.isEmpty() || password.isEmpty()) {
-        errorLabel.setText("Bitte alle Felder ausfüllen.");
-        return;
-    }
-
-    Optional<User> result = userDAO.getByUsername(username);
-
-    if (result.isEmpty() || !PasswordUtil.verify(password, result.get().getPasswordHash())) {
-        errorLabel.setText("Ungültiger Benutzername oder Passwort.");
-        return;
-    }
-
-    navigateTo(result.get());
-}
-```
 
 **Rollenbasierte Navigation:**
+
 ```java
-private void navigateTo(User user) {
-    String fxml = switch (user.getRole()) {
-        case ADMIN       -> "/com/brh/projekt_plan4sign_2026/view/AdminView.fxml";
-        case TEILNEHMER  -> "/com/brh/projekt_plan4sign_2026/view/TeilnehmerView.fxml";
-        case DOLMETSCHER -> "/com/brh/projekt_plan4sign_2026/view/DolmetscherView.fxml";
-    };
-    ...
-}
+String fxml = switch (user.getRole()) {
+    case ADMIN       -> ".../AdminView.fxml";
+    case TEILNEHMER  -> ".../TeilnehmerView.fxml";
+    case DOLMETSCHER -> ".../DolmetscherView.fxml";
+};
 ```
 
-> **Entscheidung:** `switch` mit Pattern Matching wurde verwendet,
-> da es alle Enum-Werte zur Kompilierzeit prüft – vergessene Rollen
-> führen zu einem Compiler-Fehler, nicht zu einem Laufzeitfehler.
-
-> **Entscheidung:** `Optional<User>` aus `getByUsername()` verhindert
-> eine `NullPointerException`, wenn kein Benutzer gefunden wird.
+> **Entscheidung:** `switch` mit Enum-Pattern prüft alle Rollen zur Kompilierzeit –
+> fehlende Fälle führen zu einem Compiler-Fehler.
 
 ---
 
-##### 4.2.4 App.java
+##### 4.2.3 Erweiterung der Unterricht-Entität
 
-`App.java` ersetzt die vom IntelliJ-Template generierte `HelloApplication.java`
-und ist der JavaFX-Einstiegspunkt der Anwendung.
-```java
-public class App extends Application {
-    @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader loader = new FXMLLoader(
-            getClass().getResource("/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
-        );
-        Scene scene = new Scene(loader.load());
-        stage.setTitle("Plan4Sign 2026");
-        stage.setWidth(400);
-        stage.setHeight(350);
-        stage.setResizable(false);
-        stage.setScene(scene);
-        stage.show();
-    }
-}
-```
+Die `Unterricht`-Klasse wurde um Anzeige-Attribute erweitert, da für das UI
+lesbare Namen (z. B. Klassenname) statt Fremdschlüssel benötigt werden:
 
-> **Entscheidung:** `setResizable(false)` wurde gesetzt, da das Login-Fenster
-> eine feste Größe haben soll und nicht skaliert werden muss.
-
----
-
-##### 4.2.5 Testbenutzer
-
-Für den Test des Login-Systems wurde ein Testbenutzer in der Datenbank angelegt:
-```sql
-INSERT INTO User (username, passwordHash, role)
-VALUES ('admin', '$2a$12$...', 'ADMIN');
-```
-
-> Das Passwort `admin123` wurde mit `PasswordUtil.hash()` gehasht
-> und als BCrypt-Hash in der Datenbank gespeichert.
-> Das Klartext-Passwort wird nirgends gespeichert.
-
----
-
-##### 4.2.6 Platzhalter-Ansichten
-
-Für jede Benutzerrolle wurden vorläufige FXML-Ansichten und Controller erstellt,
-die nach erfolgreichem Login geladen werden:
-
-| Rolle       | FXML                   | Controller                   |
-|-------------|------------------------|------------------------------|
-| ADMIN       | `AdminView.fxml`       | `AdminController.java`       |
-| TEILNEHMER  | `TeilnehmerView.fxml`  | `TeilnehmerController.java`  |
-| DOLMETSCHER | `DolmetscherView.fxml` | `DolmetscherController.java` |
-
-> **Begründung:** Die Platzhalter ermöglichen es, das vollständige
-> Login-System zu testen, bevor die eigentlichen Ansichten implementiert werden.
-
----
-
-##### 4.2.7 Erweiterung der Unterricht-Entität
-
-Im Verlauf der Implementierung wurde festgestellt, dass die bestehende
-`Unterricht`-Klasse zwar die Datenbankstruktur korrekt abbildet,
-jedoch nicht ausreichend für die Darstellung im Frontend ist.
-
-Die ursprüngliche Klasse enthielt ausschließlich technische Fremdschlüssel:
-
-- KlasseID
-- FachID
-- DolmetscherID
-
-Für die Anzeige in der Benutzeroberfläche werden jedoch
-lesbare Informationen benötigt (z. B. Klassenname statt ID).
-
-Daher wurde die Klasse um folgende Attribute erweitert:
 ```java
 private String klassename;
 private String fachname;
 private String dolmetschername;
+private String teilnehmername;
 ```
-Zusätzlich wurden entsprechende Getter- und Setter-Methoden ergänzt.
 
-
-> **Begründung:**
-> Die Erweiterung ermöglicht eine direkte Darstellung der Daten im UI,
-> ohne zusätzliche Logik im Controller.
-> Die Daten werden bereits im DAO vorbereitet (JOIN), wodurch eine klare
-> Trennung zwischen Datenzugriff und Darstellung eingehalten wird (MVC-Prinzip).
-
+> **Begründung:** Die Daten werden bereits im DAO über JOINs vorbereitet.
+> Der Controller bleibt dadurch von Datenaufbereitungslogik frei (MVC-Prinzip).
 
 ---
 
-#### 4.2.8 Erweiterung des UnterrichtDAO (JOIN-Abfrage)
+##### 4.2.4 Datenzugriff und Darstellung (AdminView)
 
-Zur Anzeige der vollständigen Unterrichtsdaten wurde die Methode
-`getAllWithDetails()` im `UnterrichtDAO` implementiert.
+Die Daten werden über `getAllWithDetails()` geladen – eine SQL-Abfrage mit JOINs
+über die Tabellen `Unterricht`, `Klasse`, `Fach` und optional `Dolmetscher` und `Teilnehmer`,
+um alle relevanten Anzeigedaten in einer einzigen Abfrage bereitzustellen.
+Zusätzlich wird der Teilnehmername (Vorname + Nachname) über einen JOIN mit der Teilnehmer-Tabelle
+geladen, um eine vollständige Anzeige im UI zu ermöglichen.
 
-Dabei wird eine SQL-Abfrage mit mehreren JOINs verwendet:
+Die Spalten des `TableView` werden direkt mit den Gettern des `Unterricht`-Modells verknüpft.
+Nach jeder Zuweisung wird `loadData()` erneut aufgerufen, um die Ansicht
+mit dem aktuellen Datenbankstand zu synchronisieren.
 
-```sql
-SELECT 
-u.UnterrichtID,
-u.date,
-u.starttime,
-u.endtime,
-u.KlasseID,
-u.FachID,
-u.DolmetscherID,
-k.klassename,
-f.fachname,
-CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername
-FROM Unterricht u
-JOIN Klasse k ON u.KlasseID = k.KlasseID
-JOIN Fach f ON u.FachID = f.FachID
-LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID
-ORDER BY u.date, u.starttime;
-```
-
-Die Abfrage verbindet die Tabellen:
-
-- `Unterricht` → Basisdaten
-- `Klasse` → Klassenname
-- `Fach` → Fachname
-- `Dolmetscher` → Name des Dolmetschers (optional)
-
-> **Begründung:**
-> Begründung:
-> Durch die Verwendung von JOINs werden alle benötigten Daten in einer
-> einzigen Abfrage geladen.
-> Der `LEFT JOIN` stellt sicher, dass auch Unterrichtseinheiten ohne
-> zugewiesenen Dolmetscher angezeigt werden.
-
---- 
-
-#### 4.2.9 Mapping von Datenbank zu Objekt
-
-Die aus der Datenbank geladenen Daten werden im DAO in Java-Objekte
-der Klasse Unterricht überführt.
-
-Dabei erfolgt die Erstellung des Objekts in zwei Schritten:
-
-1. Initialisierung der Basisdaten über den Konstruktor
-2. Ergänzung der Anzeige-Daten über Setter-Methoden
-
-```java
-Unterricht unterricht = new Unterricht(...);
-
-unterricht.setKlassename(...);
-unterricht.setFachname(...);
-unterricht.setDolmetschername(...);
-```
-
-> **Begründung:**
-> Der Konstruktor enthält ausschließlich Pflichtfelder (Datenbankstruktur),
-> während zusätzliche Anzeige-Daten separat gesetzt werden.
-> Dieses Vorgehen verhindert eine Überladung des Konstruktors und
-> ermöglicht eine flexible Erweiterung des Modells.
+> **Begründung:** Die Aufbereitung der Daten erfolgt vollständig im DAO.
+> Der Controller ist ausschließlich für die Darstellung zuständig.
 
 ---
 
-##### 4.2.10 Trennung von Datenzugriff und Darstellung
-
-Die Aufbereitung der Daten erfolgt vollständig im DAO,
-während der Controller ausschließlich für die Darstellung zuständig ist.
-
-Datenfluss:
-
-```textmate
-Datenbank → DAO → Model (Unterricht) → Controller → UI
-```
-
-> **Begründung:**
-> Diese klare Trennung entspricht dem MVC-Architekturprinzip und verhindert,
-> dass Geschäftslogik im Controller implementiert wird.
-> Dadurch bleibt der Code wartbar, übersichtlich und erweiterbar.
-> 
----
-
-##### 4.2.11 Darstellung der Daten im TableView
-
-Im `AdminController` werden die Daten aus der Datenbank im `TableView`
-visualisiert.
-
-Dazu werden die Spalten (`TableColumn`) mit den entsprechenden Werten
-aus dem Model (`Unterricht`) verknüpft.
-
-```java
-colDate.setCellValueFactory(data ->
-    new SimpleStringProperty(data.getValue().getDate().toString()));
-
-colStart.setCellValueFactory(data ->
-    new SimpleStringProperty(data.getValue().getStartTime().toString()));
-
-colKlasse.setCellValueFactory(data ->
-    new SimpleStringProperty(data.getValue().getKlassename()));
-```
-
-> **Begründung:**
-> Die TableColumn greift direkt auf die Getter des Modells zu.
-> Dadurch bleibt der Controller schlank und enthält keine eigene Logik
-> zur Datenverarbeitung.
-> Die Darstellung wird vollständig über das Model gesteuert.`
-
----
-
-#### 4.2.12 Laden der Daten in die Benutzeroberfläche
-
-Die Daten werden über die Methode `loadData()` aus dem DAO geladen
-und anschließend dem `TableView` übergeben.
-
-```java
-List<Unterricht> list = dao.getAllWithDetails();
-tableUnterricht.setItems(FXCollections.observableArrayList(list));
-```
-
-> **Begründung:**
-> Die Verwendung von ObservableList ist notwendig, damit JavaFX
-> Änderungen in der Liste automatisch erkennt und die UI aktualisiert.
-> Dadurch wird eine dynamische Darstellung ermöglicht.
-
----
-
-#### 4.2.13 Auswahl eines Dolmetschers über ComboBox
-
-Für die Zuweisung eines Dolmetschers wird eine `ComboBox` verwendet,
-die alle verfügbaren Dolmetscher anzeigt.
-
-> **Begründung:**
-> Die Anzeige erfolgt über den vollständigen Namen (Vorname + Nachname),
-> da dies für den Benutzer verständlich ist.
-> Die Speicherung erfolgt jedoch weiterhin über die ID,
-> was eine saubere Trennung zwischen Anzeige und Datenstruktur ermöglicht.
-
----
-
-#### 4.2.14 Zuweisung eines Dolmetschers zu einer Unterrichtseinheit
-
-Der Administrator kann einen Dolmetscher auswählen und diesem eine
-Unterrichtseinheit zuweisen.
-
-```java
-Unterricht selected = tableUnterricht.getSelectionModel().getSelectedItem();
-String name = comboDolmetscher.getValue();
-```
-Anschließend wird der passende Dolmetscher anhand des Namens ermittelt
-und die Zuweisung in der Datenbank gespeichert.
-
-```java
-dao.assignDolmetscher(selected.getUnterrichtID(), dolmetscherID);
-```
-
-> **Begründung:**
-> Die Auswahl erfolgt über die Benutzeroberfläche (TableView + ComboBox),
-> während die eigentliche Zuweisung über das DAO durchgeführt wird.
-> Dies stellt sicher, dass alle Datenbankoperationen zentral im DAO bleiben
-> und nicht im Controller implementiert werden.
-
----
-
-#### 4.2.15 Aktualisierung der Ansicht nach Änderungen
-
-Nach der Zuweisung wird die Methode `loadData()` erneut aufgerufen,
-um die aktualisierten Daten im TableView darzustellen.
-
-```java
-loadData();
-```
-
-> **Begründung:**
-> Durch das erneute Laden der Daten wird sichergestellt,
-> dass die Benutzeroberfläche immer den aktuellen Zustand der Datenbank
-> widerspiegelt.
-> Dies verhindert Inkonsistenzen zwischen UI und Datenbank.`
-
----
 #### 4.3 Verfügbarkeitsprüfung bei der Dolmetscher-Zuweisung
 
 Bevor ein Dolmetscher einer Unterrichtseinheit zugewiesen wird,
-prüft der `AdminController` dessen Verfügbarkeit über den `AvailabilityDAO`.
+prüft der `AdminController` dessen Verfügbarkeit über `AvailabilityDAO.isAvailable()`.
 
 **Ablauf:**
 
-1. Administrator wählt eine Unterrichtseinheit im TableView aus
-2. Administrator wählt einen Dolmetscher aus der ComboBox
-3. System prüft über `AvailabilityDAO.isAvailable()` die Verfügbarkeit
-4. Ist der Dolmetscher nicht verfügbar → Warnung wird angezeigt, Zuweisung wird abgebrochen
-5. Ist der Dolmetscher verfügbar → Zuweisung wird gespeichert, TableView wird aktualisiert
+1. Administrator wählt Unterrichtseinheit und Dolmetscher aus
+2. System prüft Verfügbarkeit für den gewählten Zeitraum
+3. Nicht verfügbar → Warnung wird angezeigt, Zuweisung wird abgebrochen
+4. Verfügbar → Zuweisung wird gespeichert, TableView wird aktualisiert
 
-```java
-boolean frei = availabilityDAO.isAvailable(
-    d.getDolmetscherID(),
-    selected.getDate(),
-    selected.getStartTime(),
-    selected.getEndTime()
-);
- 
-if (!frei) {
-    Alert alert = new Alert(Alert.AlertType.WARNING);
-    alert.setTitle("Warnung");
-    alert.setHeaderText("Dolmetscher nicht verfügbar");
-    alert.setContentText("Der Dolmetscher ist zu diesem Zeitpunkt nicht verfügbar.");
-    alert.showAndWait();
-    return;
-}
-```
+> **Begründung:** Die Prüfung schützt vor Doppelbelegungen und stellt sicher,
+> dass keine Zuweisung für einen blockierten Zeitraum erfolgt.
 
-**Logik der `isAvailable()`-Methode:**
-
-- Dolmetscher sind standardmäßig verfügbar
-- Ein Eintrag in der Availability-Tabelle mit `availabilityType != 'Verfügbar'` bedeutet Abwesenheit
-- Zwei Typen von Blockierungen werden geprüft:
-    - Einzeltermin: spezifisches Datum + Uhrzeit
-    - Zeitraum: `dateFrom` bis `dateTo`
-
-> **Begründung:**
-> Die Verfügbarkeitsprüfung schützt vor Doppelbelegungen und stellt sicher,
-> dass kein Dolmetscher für einen Zeitraum eingeplant wird,
-> in dem er nachweislich nicht verfügbar ist.
-> Die Warnung über `Alert` gibt dem Administrator eine klare Rückmeldung.
- 
 ---
 
 #### 4.4 Dolmetscher-Ansicht (DolmetscherView)
 
 ##### 4.4.1 Übersicht
 
-Nach dem Login als Dolmetscher wird die `DolmetscherView` geladen.
-Diese zeigt ausschließlich die Unterrichtseinheiten an,
-die dem eingeloggten Dolmetscher zugewiesen sind.
-
-| Datei                        | Package            | Aufgabe                                      |
-|------------------------------|--------------------|----------------------------------------------|
+| Datei                        | Package            | Aufgabe                                         |
+|------------------------------|--------------------|-------------------------------------------------|
 | `DolmetscherView.fxml`       | resources/.../view | Benutzeroberfläche des Dolmetscher-Einsatzplans |
 | `DolmetscherController.java` | controller         | Lädt und zeigt die eigenen Unterrichtseinheiten |
- 
+
 ---
 
 ##### 4.4.2 Dependency Injection – setDolmetscher()
 
 Da der `DolmetscherController` wissen muss, welcher Dolmetscher eingeloggt ist,
-wird das `Dolmetscher`-Objekt nach dem Laden der View übergeben.
+wird das `Dolmetscher`-Objekt nach dem Laden der View vom `LoginController` übergeben.
 
 ```java
 public void setDolmetscher(Dolmetscher dolmetscher) {
     this.dolmetscher = dolmetscher;
-    labelWillkommen.setText(
-        "Willkommen, " + dolmetscher.getFirstname() + " " + dolmetscher.getLastname()
-    );
+    labelWillkommen.setText("Willkommen, " + dolmetscher.getFirstname() + " " + dolmetscher.getLastname());
     loadData();
 }
 ```
 
-> **Entscheidung:** `loadData()` wird nicht in `initialize()` aufgerufen,
-> sondern erst in `setDolmetscher()`.
-> Zum Zeitpunkt von `initialize()` ist das `dolmetscher`-Objekt noch `null`,
-> da es erst vom `LoginController` übergeben wird.
-> Ein Aufruf von `loadData()` in `initialize()` würde zu einer
-> `NullPointerException` führen.
+> **Entscheidung:** `loadData()` wird bewusst nicht in `initialize()` aufgerufen,
+> da das `Dolmetscher`-Objekt zu diesem Zeitpunkt noch nicht übergeben wurde.
+> Die Datenbankabfrage erfolgt erst nach der Übergabe durch den `LoginController`.
 
 **Ablauf der Datenübergabe:**
 
 ```
 LoginController → loader.getController() → setDolmetscher(dolmetscher) → loadData()
 ```
- 
+
+Die Daten werden über `getWithDetailsByDolmetscher()` geladen –
+eine SQL-Abfrage mit JOINs, gefiltert nach `DolmetscherID`.
+
+**Erweiterte DAO-Methoden für diese Ansicht:**
+
+- `DolmetscherDAO.getByUserID()` – ermittelt den Dolmetscher anhand der eingeloggten `UserID`
+- `UnterrichtDAO.getWithDetailsByDolmetscher()` – lädt die zugewiesenen Unterrichtseinheiten mit JOIN-Details
+
 ---
 
-##### 4.4.3 Erweiterung des UnterrichtDAO – getWithDetailsByDolmetscher()
+##### 4.4.3 DolmetscherView.fxml – Angezeigte Spalten
 
-Für die Dolmetscher-Ansicht wurde eine neue Methode im `UnterrichtDAO` ergänzt,
-die alle Unterrichtseinheiten eines bestimmten Dolmetschers mit JOIN-Details lädt.
+| Spalte      | Inhalt                        |
+|-------------|-------------------------------|
+| Datum       | Datum der Unterrichtseinheit  |
+| Start       | Startzeit                     |
+| Ende        | Endzeit                       |
+| Klassenname | Name der Klasse               |
+| Fachname    | Name des Fachs                |
+| Teilnehmer  | Name des Teilnehmers          |
 
-```java
-public List<Unterricht> getWithDetailsByDolmetscher(int dolmetscherID) throws SQLException
-```
-
-Die SQL-Abfrage entspricht `getAllWithDetails()`, enthält jedoch einen zusätzlichen
-`WHERE`-Filter:
-
-```sql
-WHERE u.DolmetscherID = ?
-```
-
-> **Begründung:**
-> Anstatt alle Unterrichtseinheiten zu laden und clientseitig zu filtern,
-> erfolgt die Filterung direkt in der Datenbank.
-> Dies reduziert den Datentransfer und verbessert die Performance.
-> Die Verwendung von `PreparedStatement` verhindert zusätzlich SQL-Injection.
- 
----
-
-##### 4.4.4 Erweiterung des DolmetscherDAO – getByUserID()
-
-Für die Navigation nach dem Login wurde die Methode `getByUserID()` ergänzt.
-Sie sucht den Dolmetscher anhand der `UserID` des eingeloggten Benutzers.
-
-```java
-public Dolmetscher getByUserID(int userID) throws SQLException {
-    String sql = "SELECT * FROM Dolmetscher WHERE UserID = ?";
-    ...
-}
-```
-
-> **Begründung:**
-> Nach dem Login ist zunächst nur das `User`-Objekt bekannt (mit `userID`).
-> Um das zugehörige `Dolmetscher`-Objekt (mit `dolmetscherID`, `firstname` usw.)
-> zu erhalten, ist eine separate Datenbankabfrage über die `UserID` notwendig.
- 
----
-
-##### 4.4.5 DolmetscherView.fxml
-
-Die Dolmetscher-Ansicht enthält folgende UI-Elemente:
-
-- `Label` (fx:id="labelWillkommen") – persönliche Begrüßung mit Name
-- `TableView` (fx:id="tableUnterricht") – Liste der eigenen Unterrichtseinheiten
-
-Angezeigte Spalten:
-
-| Spalte      | Inhalt                          |
-|-------------|---------------------------------|
-| Datum       | Datum der Unterrichtseinheit    |
-| Start       | Startzeit                       |
-| Ende        | Endzeit                         |
-| Klasse      | Name der Klasse                 |
-| Fach        | Name des Fachs                  |
-| Teilnehmer  | Name des Teilnehmers            |
- 
 ---
 
 #### 4.5 Teilnehmer-Ansicht (TeilnehmerView)
 
 ##### 4.5.1 Übersicht
 
-Nach dem Login als Teilnehmer wird die `TeilnehmerView` geladen.
-Diese zeigt den Stundenplan der Klasse an, der der eingeloggte Teilnehmer angehört.
-
-| Datei                       | Package            | Aufgabe                                    |
-|-----------------------------|--------------------|--------------------------------------------|
+| Datei                       | Package            | Aufgabe                                        |
+|-----------------------------|--------------------|-------------------------------------------------|
 | `TeilnehmerView.fxml`       | resources/.../view | Benutzeroberfläche des Teilnehmer-Stundenplans |
 | `TeilnehmerController.java` | controller         | Lädt und zeigt den Stundenplan der eigenen Klasse |
- 
+
 ---
 
 ##### 4.5.2 Dependency Injection – setTeilnehmer()
 
-Analog zur Dolmetscher-Ansicht wird das `Teilnehmer`-Objekt nach dem Laden der View
-vom `LoginController` übergeben.
+Dieselbe Vorgehensweise wie beim `DolmetscherController` wird angewendet:
+Das `Teilnehmer`-Objekt wird nach dem Laden der View vom `LoginController` übergeben,
+woraufhin `loadData()` mit der `klasseID` des Teilnehmers aufgerufen wird.
 
-```java
-public void setTeilnehmer(Teilnehmer teilnehmer) {
-    this.teilnehmer = teilnehmer;
-    labelWillkommen.setText(
-        "Willkommen, " + teilnehmer.getFirstname() + " " + teilnehmer.getLastname()
-    );
-    loadData();
-}
-```
+Die Daten werden über `getWithDetailsByKlasse()` geladen –
+eine SQL-Abfrage mit JOINs, gefiltert nach `KlasseID`.
 
-> **Entscheidung:** Das gleiche Muster wie beim `DolmetscherController` wurde
-> angewendet – `loadData()` wird erst in `setTeilnehmer()` aufgerufen,
-> da die `klasseID` des Teilnehmers zu diesem Zeitpunkt bekannt ist.
- 
+**Erweiterte DAO-Methoden für diese Ansicht:**
+
+- `TeilnehmerDAO.getByUserID()` – ermittelt den Teilnehmer anhand der eingeloggten `UserID`
+- `UnterrichtDAO.getWithDetailsByKlasse()` – lädt den Stundenplan der Klasse mit JOIN-Details
+
 ---
 
-##### 4.5.3 Erweiterung des UnterrichtDAO – getWithDetailsByKlasse()
+##### 4.5.3 TeilnehmerView.fxml – Angezeigte Spalten
 
-Für die Teilnehmer-Ansicht wurde eine neue Methode im `UnterrichtDAO` ergänzt,
-die alle Unterrichtseinheiten einer bestimmten Klasse mit JOIN-Details lädt.
-
-```java
-public List<Unterricht> getWithDetailsByKlasse(int klasseID) throws SQLException
-```
-
-Die SQL-Abfrage entspricht `getAllWithDetails()`, enthält jedoch einen zusätzlichen
-`WHERE`-Filter:
-
-```sql
-WHERE u.KlasseID = ?
-```
-
-> **Begründung:**
-> Ein Teilnehmer gehört genau einer Klasse an und sieht ausschließlich
-> den Stundenplan seiner eigenen Klasse.
-> Die Filterung nach `KlasseID` erfolgt direkt in der Datenbank,
-> was effizienter ist als ein clientseitiger Filter.
- 
----
-
-##### 4.5.4 Erweiterung des TeilnehmerDAO – getByUserID()
-
-Für die Navigation nach dem Login wurde die Methode `getByUserID()` ergänzt.
-Sie sucht den Teilnehmer anhand der `UserID` des eingeloggten Benutzers.
-
-```java
-public Teilnehmer getByUserID(int userID) throws SQLException {
-    String sql = "SELECT * FROM Teilnehmer WHERE UserID = ?";
-    ...
-}
-```
-
-> **Begründung:**
-> Identische Logik wie beim `DolmetscherDAO.getByUserID()`.
-> Nach dem Login ist zunächst nur das `User`-Objekt bekannt.
-> Das `Teilnehmer`-Objekt (mit `klasseID`, `firstname` usw.)
-> wird über die `UserID` aus der Datenbank geladen.
- 
----
-
-##### 4.5.5 TeilnehmerView.fxml
-
-Die Teilnehmer-Ansicht enthält folgende UI-Elemente:
-
-- `Label` (fx:id="labelWillkommen") – persönliche Begrüßung mit Name
-- `TableView` (fx:id="tableUnterricht") – Stundenplan der eigenen Klasse
-
-Angezeigte Spalten:
-
-| Spalte      | Inhalt                          |
-|-------------|---------------------------------|
-| Datum       | Datum der Unterrichtseinheit    |
-| Start       | Startzeit                       |
-| Ende        | Endzeit                         |
-| Fach        | Name des Fachs                  |
+| Spalte      | Inhalt                             |
+|-------------|------------------------------------|
+| Datum       | Datum der Unterrichtseinheit       |
+| Start       | Startzeit                          |
+| Ende        | Endzeit                            |
+| Fachname    | Name des Fachs                     |
 | Dolmetscher | Name des zugewiesenen Dolmetschers |
- 
+
 ---
 
 #### 4.6 Erweiterung des LoginController – Datenübergabe an Controller
 
-Der `LoginController` wurde erweitert, um nach dem Laden der View
-das jeweilige Objekt (Dolmetscher oder Teilnehmer) an den Controller zu übergeben.
-
 ```java
 if (user.getRole() == Role.DOLMETSCHER) {
-    DolmetscherDAO dolDAO = new DolmetscherDAO();
-    Dolmetscher dolmetscher = dolDAO.getByUserID(user.getUserID());
+    Dolmetscher dolmetscher = new DolmetscherDAO().getByUserID(user.getUserID());
     DolmetscherController controller = loader.getController();
     controller.setDolmetscher(dolmetscher);
 }
- 
+
 if (user.getRole() == Role.TEILNEHMER) {
-    TeilnehmerDAO teilDAO = new TeilnehmerDAO();
-    Teilnehmer teilnehmer = teilDAO.getByUserID(user.getUserID());
+    Teilnehmer teilnehmer = new TeilnehmerDAO().getByUserID(user.getUserID());
     TeilnehmerController controller = loader.getController();
     controller.setTeilnehmer(teilnehmer);
 }
 ```
 
-> **Begründung:**
-> Der `FXMLLoader` erstellt den Controller beim Laden der FXML-Datei.
-> Über `loader.getController()` erhält man eine Referenz auf diesen Controller
-> und kann Daten übergeben, bevor die View angezeigt wird.
-> Dieses Muster wird als **Dependency Injection** bezeichnet und ist
-> ein bewährtes Verfahren in JavaFX-Anwendungen.
+> **Begründung:** Über `loader.getController()` wird die Referenz auf den geladenen Controller
+> abgerufen und das jeweilige Objekt übergeben, bevor die View angezeigt wird
+> (Dependency Injection Pattern).
 
-**Aktualisierte Übersicht der DAO-Methoden:**
-
-| DAO-Klasse      | Neue Methoden                                                              |
-|-----------------|----------------------------------------------------------------------------|
-| DolmetscherDAO  | `getByUserID(int userID)`                                                  |
-| TeilnehmerDAO   | `getByUserID(int userID)`                                                  |
-| UnterrichtDAO   | `getWithDetailsByDolmetscher(int dolmetscherID)`, `getWithDetailsByKlasse(int klasseID)` |
- 
 ---
 
 #### 4.7 Git Commits – Woche 4
@@ -1696,7 +918,7 @@ if (user.getRole() == Role.TEILNEHMER) {
 Implement DolmetscherView and DolmetscherController with login navigation
 Implement TeilnehmerView and TeilnehmerController with login navigation
 ```
- 
+
 ---
 
 ### Status

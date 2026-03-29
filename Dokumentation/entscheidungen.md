@@ -60,6 +60,9 @@ Begründung:
 - Erweiterbarkeit des Systems
 - Vorbereitung für spätere Auswertungen
 
+> **Hinweis:** Die Verknüpfung zwischen Bereich und Fach wird ausschließlich über Foreign Keys abgebildet.
+> In den Java-Modellen werden aus Gründen der Entkopplung keine Objekt-Referenzen verwendet (z. B. `bereichID` statt `Bereich`-Objekt).
+
 Das Attribut `isInterpreterRelevant` wurde im Fach ergänzt.
 
 Begründung:
@@ -67,6 +70,47 @@ Begründung:
 - Kennzeichnung, ob für ein Fach grundsätzlich ein Dolmetscher erforderlich ist
 - Unterstützung der Planungslogik
 - Grundlage für spätere automatische Prüfungen
+
+---
+
+## Erweiterung des Unterricht-Modells um Anzeige-Felder
+
+Die Entität `Unterricht` wurde um zusätzliche Anzeige-Felder erweitert:
+
+- `klassename`
+- `fachname`
+- `dolmetschername`
+- `teilnehmername`
+
+Begründung:
+
+- Reduzierung der Logik in den Controllern
+- Vorbereitung UI-freundlicher Daten direkt im DAO
+- Entlastung der View-Schicht
+- Einhaltung des MVC-Prinzips: Datenaufbereitung in der Datenzugriffsschicht, nicht im UI
+
+> **Entscheidung:** Die Felder werden über JOINs im DAO befüllt und über Setter-Methoden
+> am Objekt gesetzt. Der Konstruktor enthält ausschließlich Pflichtfelder der Datenbankstruktur.
+
+---
+
+## Einheitliche Benennungskonvention für Klassenbezeichnungen
+
+Im System werden Klassenbezeichnungen an drei Stellen verwendet,
+die unterschiedliche Konventionen erfordern:
+
+| Ebene       | Bezeichnung   | Konvention                        |
+|-------------|---------------|-----------------------------------|
+| Datenbank   | `klassename`  | Kleinschreibung (DB-Konvention)   |
+| Java-Modell | `klasseName`  | camelCase (Java-Konvention)       |
+| ER-Modell   | `className`   | camelCase (konzeptionelle Ebene)  |
+
+> **Entscheidung:** Die unterschiedliche Schreibweise ist bewusst gewählt,
+> um den jeweiligen Konventionen der Ebene zu entsprechen.
+> Die Datenbankbezeichner folgen der MySQL-Konvention (Kleinschreibung),
+> während Java-Felder camelCase verwenden.
+> Diese Entscheidung wurde getroffen, um domänenspezifische Eindeutigkeit
+> und Konsistenz innerhalb jeder Schicht zu gewährleisten.
 
 ---
 
@@ -160,7 +204,7 @@ während der Unterricht das organisatorische Kernelement darstellt.
 Die Availability wurde erweitert,
 um sowohl Einzeltermine als auch Zeiträume abzubilden.
 
-Möglichkeiten:
+Unterstützte Availability-Typen:
 
 - Einzeltermin (date)
 - Zeitfenster innerhalb eines Tages (startTime / endTime)
@@ -213,3 +257,6 @@ Ziel:
 
 Die Konfliktlogik wird in der Business-Schicht implementiert
 und nicht auf Datenbankebene.
+
+Dadurch ist die Datenstruktur vollständig darauf ausgelegt,
+eine spätere automatische Konflikterkennung ohne strukturelle Änderungen zu ermöglichen.
