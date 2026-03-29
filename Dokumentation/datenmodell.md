@@ -37,21 +37,25 @@ mit unterschiedlichen Sichten für:
 - `UserID` (PK)
 - `username` (UNIQUE)
 - `passwordHash`
-- `isAdmin` (BOOLEAN)
+- `role` (ENUM: 'ADMIN', 'DOLMETSCHER', 'TEILNEHMER')
 
 **Beschreibung:**
 
-Speichert die Login-Daten der Anwendung.
+Speichert die Login-Daten und die Rolle des Benutzers.
 
 Ein User ist genau einer Person zugeordnet:
 
 - entweder einem Teilnehmer
 - oder einem Dolmetscher
 
-Nur Dolmetscher können Administratorrechte besitzen.
-
+Die Rolle wird ausschließlich über das `role`-Feld gesteuert.  
 Die fachliche Zuordnung erfolgt über eine 1:1-Beziehung  
 zwischen `User` und `Teilnehmer` bzw. `User` und `Dolmetscher`.
+
+> **Änderung:** Das ursprüngliche Attribut `isAdmin (BOOLEAN)` wurde durch `role (ENUM)` ersetzt.
+> Ein Boolean-Wert konnte die Rolle eines Benutzers nicht eindeutig abbilden –
+> insbesondere war nicht erkennbar, ob ein Benutzer Dolmetscher oder Teilnehmer ist.
+> Mit dem ENUM-Typ wird die Rolle direkt und eindeutig im User gespeichert.
 
 ---
 
@@ -157,7 +161,10 @@ Ein Dolmetscher:
 
 - besitzt genau ein User-Konto (1:1)
 - kann mehrere Unterrichtseinheiten betreuen (1:n)
-- kann Administratorrechte besitzen
+
+> **Änderung:** Der Punkt „kann Administratorrechte besitzen" wurde entfernt.
+> Administratorrechte werden nicht mehr separat am Dolmetscher vergeben,
+> sondern ausschließlich über das `role`-Feld im User gesteuert.
 
 ---
 
@@ -232,7 +239,6 @@ Ein Dolmetscher kann mehrere Availability-Einträge besitzen (1:n).
 - Ein Dolmetscher kann mehrere Availability-Einträge besitzen (1:n)
 - Ein Teilnehmer besitzt genau einen User (1:1)
 - Ein Dolmetscher besitzt genau einen User (1:1)
-- Nur Dolmetscher können Administrator sein
 
 ---
 

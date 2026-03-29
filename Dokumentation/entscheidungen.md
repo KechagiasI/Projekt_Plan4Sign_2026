@@ -34,14 +34,19 @@ Rollen:
 - Dolmetscher → sieht ausschließlich den eigenen Einsatzplan
 - Administrator → verwaltet Planung und Zuweisungen
 
-Nur Dolmetscher können Administratorrechte besitzen.
+Die Rolle wird ausschließlich über das `role`-Feld (ENUM) im User gesteuert.
 
-Die Entität „User“ wurde zur sauberen Trennung
+Die Entität „User" wurde zur sauberen Trennung
 von Login-Daten und fachlichen Personendaten eingeführt.
+
+> **Änderung:** Der Satz „Nur Dolmetscher können Administratorrechte besitzen" wurde entfernt.
+> Administratorrechte werden nicht mehr separat am Dolmetscher vergeben,
+> sondern ausschließlich über das `role`-Feld im User gesteuert.
+> ADMIN ist ein eigenständiger Benutzertyp – kein Dolmetscher mit erweiterten Rechten.
 
 ---
 
-## Einführung der Entitäten „Bereich“ und „Fach“
+## Einführung der Entitäten „Bereich" und „Fach"
 
 Zur besseren fachlichen Strukturierung wurde
 eine zusätzliche Hierarchie eingeführt:
@@ -104,7 +109,7 @@ zur Sicherung und Versionshistorie des Projekts.
 
 ---
 
-## Einführung der Entität „Klasse“
+## Einführung der Entität „Klasse"
 
 Die Klassenbezeichnung wurde bewusst als eigene Entität modelliert
 und nicht als Textattribut gespeichert.

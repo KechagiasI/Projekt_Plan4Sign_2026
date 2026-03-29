@@ -33,18 +33,75 @@
 
 # 🔷 3. Pattern für alle Methoden
 
-## 🟢 SELECT (getAll)
+## 🟢 SELECT (getAll) – ohne Filter
 
 ```java
 Connection conn = DatabaseConnection.getConnection();
 String sql = "SELECT * FROM Tabelle";
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery(sql);
+
+while(rs.next()) {
+    // Daten lesen
+}
+```
+
+> **Hinweis:** Für `getAll()` ohne Parameter wird `Statement` verwendet.
+> Sobald ein Parameter (z. B. eine ID) übergeben wird,
+> ist `PreparedStatement` Pflicht (SQL-Injection-Schutz).
+
+---
+
+## 🟢 SELECT (getByID / getByKlasse) – mit Filter
+
+```java
+Connection conn = DatabaseConnection.getConnection();
+String sql = "SELECT * FROM Tabelle WHERE id = ?";
 PreparedStatement stmt = conn.prepareStatement(sql);
+
+stmt.setInt(1, id);
 ResultSet rs = stmt.executeQuery();
 
 while(rs.next()) {
     // Daten lesen
 }
 ```
+
+---
+
+## 🟢 SELECT mit JOIN – für UI-Anzeige
+
+👉 Wenn man lesbare Daten (Namen statt IDs) für die Oberfläche braucht,
+verwendet man JOINs direkt im SQL.
+
+```java
+String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
+             "k.klassename, f.fachname, " +
+             "CONCAT(d.firstname, ' ', d.lastname) AS dolmetschername " +
+             "FROM Unterricht u " +
+             "JOIN Klasse k ON u.KlasseID = k.KlasseID " +
+             "JOIN Fach f ON u.FachID = f.FachID " +
+             "LEFT JOIN Dolmetscher d ON u.DolmetscherID = d.DolmetscherID " +
+             "WHERE u.DolmetscherID = ? " +
+             "ORDER BY u.date, u.starttime";
+
+Connection conn = DatabaseConnection.getConnection();
+PreparedStatement stmt = conn.prepareStatement(sql);
+stmt.setInt(1, dolmetscherID);
+ResultSet rs = stmt.executeQuery();
+
+while(rs.next()) {
+    Unterricht u = new Unterricht(...);
+    u.setKlassename(rs.getString("klassename"));
+    u.setFachname(rs.getString("fachname"));
+    u.setDolmetschername(rs.getString("dolmetschername"));
+}
+```
+
+> **Warum LEFT JOIN?**
+> Ein `LEFT JOIN` stellt sicher, dass auch Unterrichtseinheiten
+> ohne zugewiesenen Dolmetscher (`DolmetscherID = NULL`) angezeigt werden.
+> Mit `INNER JOIN` würden diese Zeilen komplett wegfallen.
 
 ---
 
@@ -76,10 +133,10 @@ stmt.executeUpdate();
 
 # 🔷 4. Unterschied executeQuery vs executeUpdate
 
-| Methode | Verwendung |
-|--------|----------|
-| executeQuery() | SELECT |
-| executeUpdate() | INSERT / DELETE / UPDATE |
+| Methode          | Verwendung                  |
+|------------------|-----------------------------|
+| executeQuery()   | SELECT                      |
+| executeUpdate()  | INSERT / DELETE / UPDATE    |
 
 ---
 
@@ -96,17 +153,51 @@ while(resultSet.next()) {
 
 ---
 
-# 🔷 6. Object Mapping
+# 🔷 6. NULL-Werte sicher lesen (SEHR WICHTIG)
+
+👉 Wenn ein Datenbankfeld NULL sein kann (z. B. `DolmetscherID`),
+darf man es nicht direkt mit `getInt()` lesen – das würde 0 zurückgeben.
+
+**Richtiger Weg:**
+
+```java
+Integer dolmetscherID = resultSet.getObject("DolmetscherID") != null
+        ? resultSet.getInt("DolmetscherID")
+        : null;
+```
+
+> **Warum `Integer` statt `int`?**
+> `int` kann keinen `null`-Wert speichern.
+> `Integer` (Wrapper-Klasse) kann `null` sein –
+> was dem NULL-Wert in der Datenbank entspricht.
+
+---
+
+# 🔷 7. Object Mapping
 
 👉 DB → Java Object
 
+**Einfaches Mapping (nur Basisdaten):**
 ```java
 list.add(new Entity(id, name));
 ```
 
+**Erweitertes Mapping (Basisdaten + Anzeige-Daten über Setter):**
+```java
+Unterricht u = new Unterricht(unterrichtID, date, starttime, endtime, klasseID, fachID, dolmetscherID);
+u.setKlassename(resultSet.getString("klassename"));
+u.setFachname(resultSet.getString("fachname"));
+u.setDolmetschername(resultSet.getString("dolmetschername"));
+```
+
+> **Warum zwei Schritte?**
+> Der Konstruktor enthält nur Pflichtfelder (Datenbankstruktur).
+> Zusätzliche Anzeige-Daten (aus JOINs) werden separat über Setter gesetzt.
+> So bleibt der Konstruktor übersichtlich und das Modell flexibel erweiterbar.
+
 ---
 
-# 🔷 7. PreparedStatement (SEHR WICHTIG)
+# 🔷 8. PreparedStatement (SEHR WICHTIG)
 
 👉 Warum?
 
@@ -116,7 +207,7 @@ list.add(new Entity(id, name));
 
 ---
 
-# 🔷 8. Singleton Connection
+# 🔷 9. Singleton Connection
 
 👉 Nur eine Verbindung im Programm
 
@@ -126,7 +217,7 @@ Connection conn = DatabaseConnection.getConnection();
 
 ---
 
-# 🔷 9. DAO Template (Copy & Reuse)
+# 🔷 10. DAO Template (Copy & Reuse)
 
 ```java
 public class EntityDAO {
@@ -136,14 +227,29 @@ public class EntityDAO {
 
         String sql = "SELECT * FROM TABLE";
         Connection conn = DatabaseConnection.getConnection();
-        PreparedStatement stmt = conn.prepareStatement(sql);
-        ResultSet rs = stmt.executeQuery();
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery(sql);
 
         while(rs.next()) {
             list.add(new Entity(...));
         }
 
         return list;
+    }
+
+    public Entity getByID(int id) throws SQLException {
+        String sql = "SELECT * FROM TABLE WHERE id = ?";
+        Connection conn = DatabaseConnection.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(sql);
+
+        stmt.setInt(1, id);
+        ResultSet rs = stmt.executeQuery();
+
+        if(rs.next()) {
+            return new Entity(...);
+        }
+
+        return null;
     }
 
     public void insert(Entity entity) throws SQLException {
@@ -168,9 +274,9 @@ public class EntityDAO {
 
 ---
 
-# 🔷 10. Wie denkst du richtig?
+# 🔷 11. Wie denkst du richtig?
 
-👉 Immer von hier Fängst du an:
+👉 Immer von hier fängst du an:
 
 ```text
 Was will ich mit der Datenbank machen?
@@ -178,20 +284,29 @@ Was will ich mit der Datenbank machen?
 
 ---
 
-# 🔷 11. Fehler vermeiden
+# 🔷 12. Fehler vermeiden
 
 ❌ SQL im Controller  
 ❌ 100 Verbindungen öffnen  
-❌ Statement statt PreparedStatement  
-❌ Kein Mapping zu Objekten
+❌ Statement statt PreparedStatement (bei Parametern!)  
+❌ Kein Mapping zu Objekten  
+❌ `getInt()` direkt auf NULL-fähige Felder → immer `getObject()` prüfen  
+❌ JOIN-Daten direkt im Controller aufbereiten → gehört ins DAO
 
 ---
 
-# 🔷 12. Merksatz (Gold!)
+# 🔷 13. Merksatz (Gold!)
 
 ```text
 Connection → SQL → Statement → Parameter → Execute → Result
 ```
 
+---
 
+#### Referenzen
 
+1. `https://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html` – Oracle Java Tutorials: Using Prepared Statements
+2. `https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html` – Oracle JavaDoc: PreparedStatement (Java SE 8)
+3. `https://jenkov.com/tutorials/jdbc/preparedstatement.html` – Jenkov Tutorials: Java JDBC PreparedStatement
+4. `https://stackoverflow.com/questions/2839321/connect-java-to-a-mysql-database` – Stack Overflow: Connect Java to a MySQL Database
+5. `https://stackoverflow.com/questions/5881834/getting-integer-object-from-resultset` – Stack Overflow: Getting Integer (nullable) from ResultSet mit getObject()

@@ -96,11 +96,13 @@ und Zuweisung von Dolmetschern zu bestehenden Unterrichtseinheiten.
 
 ## Technologischer Rahmen
 
-- Programmiersprache: Java
-- GUI: JavaFX
+- Programmiersprache: Java 21 (LTS)
+- GUI: JavaFX 21.0.6
 - Architektur: Model-View-Controller (MVC)
-- Datenbank: MySQL
-- Datenbankzugriff: JDBC
+- Build-System: Maven
+- Datenbank: MySQL (Port 3324 via WSL)
+- Datenbankzugriff: JDBC (mysql-connector-java 8.0.33)
+- Passwortverschlüsselung: BCrypt (jbcrypt 0.4)
 - Versionsverwaltung: Git & GitHub
 
 ---

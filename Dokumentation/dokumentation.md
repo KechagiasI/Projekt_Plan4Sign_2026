@@ -733,14 +733,6 @@ Commits dieser Woche:
 ### Status
 #### Woche 3: abgeschlossen ✅
 
-- ✅ Architekturentscheidung (MVC)
-- ✅ Package-Struktur
-- ✅ Entity-Klassen
-- ✅ GitHub-Anbindung
-- ✅ JDBC-Datenbankanbindung
-- ✅ DAO-Klassen (CRUD)
-- ✅ Test der Datenbankverbindung
-
 ----
 # Dokumentation – Woche 4
 
@@ -1407,16 +1399,305 @@ loadData();
 > Dies verhindert Inkonsistenzen zwischen UI und Datenbank.`
 
 ---
+#### 4.3 Verfügbarkeitsprüfung bei der Dolmetscher-Zuweisung
 
+Bevor ein Dolmetscher einer Unterrichtseinheit zugewiesen wird,
+prüft der `AdminController` dessen Verfügbarkeit über den `AvailabilityDAO`.
 
+**Ablauf:**
 
+1. Administrator wählt eine Unterrichtseinheit im TableView aus
+2. Administrator wählt einen Dolmetscher aus der ComboBox
+3. System prüft über `AvailabilityDAO.isAvailable()` die Verfügbarkeit
+4. Ist der Dolmetscher nicht verfügbar → Warnung wird angezeigt, Zuweisung wird abgebrochen
+5. Ist der Dolmetscher verfügbar → Zuweisung wird gespeichert, TableView wird aktualisiert
 
+```java
+boolean frei = availabilityDAO.isAvailable(
+    d.getDolmetscherID(),
+    selected.getDate(),
+    selected.getStartTime(),
+    selected.getEndTime()
+);
+ 
+if (!frei) {
+    Alert alert = new Alert(Alert.AlertType.WARNING);
+    alert.setTitle("Warnung");
+    alert.setHeaderText("Dolmetscher nicht verfügbar");
+    alert.setContentText("Der Dolmetscher ist zu diesem Zeitpunkt nicht verfügbar.");
+    alert.showAndWait();
+    return;
+}
+```
 
+**Logik der `isAvailable()`-Methode:**
+
+- Dolmetscher sind standardmäßig verfügbar
+- Ein Eintrag in der Availability-Tabelle mit `availabilityType != 'Verfügbar'` bedeutet Abwesenheit
+- Zwei Typen von Blockierungen werden geprüft:
+    - Einzeltermin: spezifisches Datum + Uhrzeit
+    - Zeitraum: `dateFrom` bis `dateTo`
+
+> **Begründung:**
+> Die Verfügbarkeitsprüfung schützt vor Doppelbelegungen und stellt sicher,
+> dass kein Dolmetscher für einen Zeitraum eingeplant wird,
+> in dem er nachweislich nicht verfügbar ist.
+> Die Warnung über `Alert` gibt dem Administrator eine klare Rückmeldung.
+ 
+---
+
+#### 4.4 Dolmetscher-Ansicht (DolmetscherView)
+
+##### 4.4.1 Übersicht
+
+Nach dem Login als Dolmetscher wird die `DolmetscherView` geladen.
+Diese zeigt ausschließlich die Unterrichtseinheiten an,
+die dem eingeloggten Dolmetscher zugewiesen sind.
+
+| Datei                        | Package            | Aufgabe                                      |
+|------------------------------|--------------------|----------------------------------------------|
+| `DolmetscherView.fxml`       | resources/.../view | Benutzeroberfläche des Dolmetscher-Einsatzplans |
+| `DolmetscherController.java` | controller         | Lädt und zeigt die eigenen Unterrichtseinheiten |
+ 
+---
+
+##### 4.4.2 Dependency Injection – setDolmetscher()
+
+Da der `DolmetscherController` wissen muss, welcher Dolmetscher eingeloggt ist,
+wird das `Dolmetscher`-Objekt nach dem Laden der View übergeben.
+
+```java
+public void setDolmetscher(Dolmetscher dolmetscher) {
+    this.dolmetscher = dolmetscher;
+    labelWillkommen.setText(
+        "Willkommen, " + dolmetscher.getFirstname() + " " + dolmetscher.getLastname()
+    );
+    loadData();
+}
+```
+
+> **Entscheidung:** `loadData()` wird nicht in `initialize()` aufgerufen,
+> sondern erst in `setDolmetscher()`.
+> Zum Zeitpunkt von `initialize()` ist das `dolmetscher`-Objekt noch `null`,
+> da es erst vom `LoginController` übergeben wird.
+> Ein Aufruf von `loadData()` in `initialize()` würde zu einer
+> `NullPointerException` führen.
+
+**Ablauf der Datenübergabe:**
+
+```
+LoginController → loader.getController() → setDolmetscher(dolmetscher) → loadData()
+```
+ 
+---
+
+##### 4.4.3 Erweiterung des UnterrichtDAO – getWithDetailsByDolmetscher()
+
+Für die Dolmetscher-Ansicht wurde eine neue Methode im `UnterrichtDAO` ergänzt,
+die alle Unterrichtseinheiten eines bestimmten Dolmetschers mit JOIN-Details lädt.
+
+```java
+public List<Unterricht> getWithDetailsByDolmetscher(int dolmetscherID) throws SQLException
+```
+
+Die SQL-Abfrage entspricht `getAllWithDetails()`, enthält jedoch einen zusätzlichen
+`WHERE`-Filter:
+
+```sql
+WHERE u.DolmetscherID = ?
+```
+
+> **Begründung:**
+> Anstatt alle Unterrichtseinheiten zu laden und clientseitig zu filtern,
+> erfolgt die Filterung direkt in der Datenbank.
+> Dies reduziert den Datentransfer und verbessert die Performance.
+> Die Verwendung von `PreparedStatement` verhindert zusätzlich SQL-Injection.
+ 
+---
+
+##### 4.4.4 Erweiterung des DolmetscherDAO – getByUserID()
+
+Für die Navigation nach dem Login wurde die Methode `getByUserID()` ergänzt.
+Sie sucht den Dolmetscher anhand der `UserID` des eingeloggten Benutzers.
+
+```java
+public Dolmetscher getByUserID(int userID) throws SQLException {
+    String sql = "SELECT * FROM Dolmetscher WHERE UserID = ?";
+    ...
+}
+```
+
+> **Begründung:**
+> Nach dem Login ist zunächst nur das `User`-Objekt bekannt (mit `userID`).
+> Um das zugehörige `Dolmetscher`-Objekt (mit `dolmetscherID`, `firstname` usw.)
+> zu erhalten, ist eine separate Datenbankabfrage über die `UserID` notwendig.
+ 
+---
+
+##### 4.4.5 DolmetscherView.fxml
+
+Die Dolmetscher-Ansicht enthält folgende UI-Elemente:
+
+- `Label` (fx:id="labelWillkommen") – persönliche Begrüßung mit Name
+- `TableView` (fx:id="tableUnterricht") – Liste der eigenen Unterrichtseinheiten
+
+Angezeigte Spalten:
+
+| Spalte      | Inhalt                          |
+|-------------|---------------------------------|
+| Datum       | Datum der Unterrichtseinheit    |
+| Start       | Startzeit                       |
+| Ende        | Endzeit                         |
+| Klasse      | Name der Klasse                 |
+| Fach        | Name des Fachs                  |
+| Teilnehmer  | Name des Teilnehmers            |
+ 
+---
+
+#### 4.5 Teilnehmer-Ansicht (TeilnehmerView)
+
+##### 4.5.1 Übersicht
+
+Nach dem Login als Teilnehmer wird die `TeilnehmerView` geladen.
+Diese zeigt den Stundenplan der Klasse an, der der eingeloggte Teilnehmer angehört.
+
+| Datei                       | Package            | Aufgabe                                    |
+|-----------------------------|--------------------|--------------------------------------------|
+| `TeilnehmerView.fxml`       | resources/.../view | Benutzeroberfläche des Teilnehmer-Stundenplans |
+| `TeilnehmerController.java` | controller         | Lädt und zeigt den Stundenplan der eigenen Klasse |
+ 
+---
+
+##### 4.5.2 Dependency Injection – setTeilnehmer()
+
+Analog zur Dolmetscher-Ansicht wird das `Teilnehmer`-Objekt nach dem Laden der View
+vom `LoginController` übergeben.
+
+```java
+public void setTeilnehmer(Teilnehmer teilnehmer) {
+    this.teilnehmer = teilnehmer;
+    labelWillkommen.setText(
+        "Willkommen, " + teilnehmer.getFirstname() + " " + teilnehmer.getLastname()
+    );
+    loadData();
+}
+```
+
+> **Entscheidung:** Das gleiche Muster wie beim `DolmetscherController` wurde
+> angewendet – `loadData()` wird erst in `setTeilnehmer()` aufgerufen,
+> da die `klasseID` des Teilnehmers zu diesem Zeitpunkt bekannt ist.
+ 
+---
+
+##### 4.5.3 Erweiterung des UnterrichtDAO – getWithDetailsByKlasse()
+
+Für die Teilnehmer-Ansicht wurde eine neue Methode im `UnterrichtDAO` ergänzt,
+die alle Unterrichtseinheiten einer bestimmten Klasse mit JOIN-Details lädt.
+
+```java
+public List<Unterricht> getWithDetailsByKlasse(int klasseID) throws SQLException
+```
+
+Die SQL-Abfrage entspricht `getAllWithDetails()`, enthält jedoch einen zusätzlichen
+`WHERE`-Filter:
+
+```sql
+WHERE u.KlasseID = ?
+```
+
+> **Begründung:**
+> Ein Teilnehmer gehört genau einer Klasse an und sieht ausschließlich
+> den Stundenplan seiner eigenen Klasse.
+> Die Filterung nach `KlasseID` erfolgt direkt in der Datenbank,
+> was effizienter ist als ein clientseitiger Filter.
+ 
+---
+
+##### 4.5.4 Erweiterung des TeilnehmerDAO – getByUserID()
+
+Für die Navigation nach dem Login wurde die Methode `getByUserID()` ergänzt.
+Sie sucht den Teilnehmer anhand der `UserID` des eingeloggten Benutzers.
+
+```java
+public Teilnehmer getByUserID(int userID) throws SQLException {
+    String sql = "SELECT * FROM Teilnehmer WHERE UserID = ?";
+    ...
+}
+```
+
+> **Begründung:**
+> Identische Logik wie beim `DolmetscherDAO.getByUserID()`.
+> Nach dem Login ist zunächst nur das `User`-Objekt bekannt.
+> Das `Teilnehmer`-Objekt (mit `klasseID`, `firstname` usw.)
+> wird über die `UserID` aus der Datenbank geladen.
+ 
+---
+
+##### 4.5.5 TeilnehmerView.fxml
+
+Die Teilnehmer-Ansicht enthält folgende UI-Elemente:
+
+- `Label` (fx:id="labelWillkommen") – persönliche Begrüßung mit Name
+- `TableView` (fx:id="tableUnterricht") – Stundenplan der eigenen Klasse
+
+Angezeigte Spalten:
+
+| Spalte      | Inhalt                          |
+|-------------|---------------------------------|
+| Datum       | Datum der Unterrichtseinheit    |
+| Start       | Startzeit                       |
+| Ende        | Endzeit                         |
+| Fach        | Name des Fachs                  |
+| Dolmetscher | Name des zugewiesenen Dolmetschers |
+ 
+---
+
+#### 4.6 Erweiterung des LoginController – Datenübergabe an Controller
+
+Der `LoginController` wurde erweitert, um nach dem Laden der View
+das jeweilige Objekt (Dolmetscher oder Teilnehmer) an den Controller zu übergeben.
+
+```java
+if (user.getRole() == Role.DOLMETSCHER) {
+    DolmetscherDAO dolDAO = new DolmetscherDAO();
+    Dolmetscher dolmetscher = dolDAO.getByUserID(user.getUserID());
+    DolmetscherController controller = loader.getController();
+    controller.setDolmetscher(dolmetscher);
+}
+ 
+if (user.getRole() == Role.TEILNEHMER) {
+    TeilnehmerDAO teilDAO = new TeilnehmerDAO();
+    Teilnehmer teilnehmer = teilDAO.getByUserID(user.getUserID());
+    TeilnehmerController controller = loader.getController();
+    controller.setTeilnehmer(teilnehmer);
+}
+```
+
+> **Begründung:**
+> Der `FXMLLoader` erstellt den Controller beim Laden der FXML-Datei.
+> Über `loader.getController()` erhält man eine Referenz auf diesen Controller
+> und kann Daten übergeben, bevor die View angezeigt wird.
+> Dieses Muster wird als **Dependency Injection** bezeichnet und ist
+> ein bewährtes Verfahren in JavaFX-Anwendungen.
+
+**Aktualisierte Übersicht der DAO-Methoden:**
+
+| DAO-Klasse      | Neue Methoden                                                              |
+|-----------------|----------------------------------------------------------------------------|
+| DolmetscherDAO  | `getByUserID(int userID)`                                                  |
+| TeilnehmerDAO   | `getByUserID(int userID)`                                                  |
+| UnterrichtDAO   | `getWithDetailsByDolmetscher(int dolmetscherID)`, `getWithDetailsByKlasse(int klasseID)` |
+ 
+---
+
+#### 4.7 Git Commits – Woche 4
+
+```
+Implement DolmetscherView and DolmetscherController with login navigation
+Implement TeilnehmerView and TeilnehmerController with login navigation
+```
+ 
+---
 
 ### Status
-#### Woche 4: in Bearbeitung 🔄
-
-- 🔄 Rollenbasierte Navigation
-- 🔄 Administrator-Oberfläche
-- 🔄 Teilnehmer-Sicht
-- 🔄 Dolmetscher-Sicht
+#### Woche 4: abgeschlossen ✅
