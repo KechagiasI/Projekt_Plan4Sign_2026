@@ -923,3 +923,223 @@ Implement TeilnehmerView and TeilnehmerController with login navigation
 
 ### Status
 #### Woche 4: abgeschlossen ✅
+
+# Dokumentation – Woche 5
+
+## 5. Woche 5 – UI-Erweiterungen, Konfliktprüfung & Abschluss
+
+## Ziel der Woche
+
+Qualitätssicherung, Erweiterung der Benutzeroberfläche und Abschluss der Anwendung.
+ 
+---
+
+### 5.1 Abmelden-Funktion (Logout)
+
+In allen drei rollenspezifischen Views wurde ein „Abmelden"-Button ergänzt,
+der den Benutzer zur Login-Ansicht zurückleitet.
+
+Die Methode `handleLogout()` wurde in `AdminController`, `DolmetscherController`
+und `TeilnehmerController` identisch implementiert:
+
+```java
+@FXML
+private void handleLogout() {
+    try {
+        FXMLLoader loader = new FXMLLoader(
+            getClass().getResource("/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
+        );
+        Stage stage = (Stage) tableUnterricht.getScene().getWindow();
+        stage.setScene(new Scene(loader.load()));
+        stage.show();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+```
+
+> **Begründung:** Ohne Abmelde-Funktion musste die Anwendung vollständig beendet
+> und neu gestartet werden, um einen anderen Benutzer anzumelden.
+> Die Funktion verbessert die Benutzerführung erheblich.
+ 
+---
+
+### 5.2 Konfliktprüfung – Zeitüberschneidung bei Dolmetscher-Zuweisung
+
+#### 5.2.1 Neue Methode: `UnterrichtDAO.hasConflict()`
+
+Vor der Zuweisung eines Dolmetschers wird geprüft, ob dieser zur gleichen Zeit
+bereits einer anderen Unterrichtseinheit zugewiesen ist.
+
+```java
+public boolean hasConflict(int dolmetscherID, int unterrichtID,
+                            LocalDate date,
+                            LocalTime startTime,
+                            LocalTime endTime) throws SQLException
+```
+
+Die SQL-Abfrage sucht nach Unterrichtseinheiten desselben Dolmetschers
+am gleichen Datum, deren Zeitfenster sich mit dem gewählten überschneidet —
+ausgenommen die aktuell gewählte Unterrichtseinheit selbst:
+
+```sql
+SELECT COUNT(*) FROM Unterricht
+WHERE DolmetscherID = ?
+AND UnterrichtID != ?
+AND date = ?
+AND starttime < ?
+AND endtime > ?
+```
+
+> **Begründung:** Die Filterung erfolgt direkt in der Datenbank,
+> um eine effiziente Konfliktprüfung ohne clientseitiges Filtern zu ermöglichen.
+ 
+---
+
+#### 5.2.2 Ablauf der Konfliktprüfung im AdminController
+
+Der `AdminController` führt bei jeder Zuweisung zwei Prüfungen durch:
+
+1. **Availability-Prüfung** — ist der Dolmetscher laut Availability-Tabelle verfügbar?
+2. **Konfliktprüfung** — hat der Dolmetscher zur gleichen Zeit bereits einen anderen Unterricht?
+
+Bei einem Konflikt wird ein Bestätigungsdialog angezeigt:
+
+```java
+if (konflikt) {
+    Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+    confirm.setTitle("Konflikt erkannt");
+    confirm.setHeaderText("Dolmetscher bereits eingeplant");
+    confirm.setContentText(
+        "Der Dolmetscher " + fullname + " hat zu diesem Zeitpunkt " +
+        "bereits eine andere Unterrichtseinheit.\n\nTrotzdem zuweisen?"
+    );
+    Optional<ButtonType> result = confirm.showAndWait();
+    if (result.isEmpty() || result.get() != ButtonType.OK) return;
+}
+```
+
+> **Begründung:** Der Administrator behält die Entscheidungshoheit.
+> Eine Warnung wird angezeigt, die Zuweisung kann jedoch bei Bedarf
+> trotzdem durchgeführt werden.
+ 
+---
+
+### 5.3 Entfernen eines Dolmetschers (Zuweisung aufheben)
+
+#### 5.3.1 Neue Methode: `UnterrichtDAO.removeDolmetscher()`
+
+```java
+public void removeDolmetscher(int unterrichtID) throws SQLException {
+    String sql = "UPDATE Unterricht SET DolmetscherID = NULL WHERE UnterrichtID = ?";
+    ...
+}
+```
+
+> **Begründung:** `ON DELETE SET NULL` ist bereits in der Datenbankstruktur definiert.
+> Die Methode setzt `DolmetscherID` auf NULL, ohne die Unterrichtseinheit zu löschen.
+
+#### 5.3.2 Ablauf im AdminController
+
+```java
+@FXML
+private void handleRemove() {
+    // 1. Prüfen ob Unterricht ausgewählt
+    // 2. Prüfen ob Dolmetscher zugewiesen
+    // 3. Bestätigung einholen
+    // 4. removeDolmetscher() aufrufen
+    // 5. loadData() → UI aktualisieren
+}
+```
+ 
+---
+
+### 5.4 UI-Verbesserungen
+
+#### 5.4.1 Responsive Layout
+
+In allen Views wurde `VBox.vgrow="ALWAYS"` am `TableView` gesetzt,
+sowie `setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS)`
+in den jeweiligen `initialize()`-Methoden.
+
+> **Begründung:** Die Spalten verteilen sich nun gleichmäßig auf die verfügbare Breite
+> und passen sich bei Größenänderung des Fensters automatisch an.
+ 
+---
+
+#### 5.4.2 Abstände (Padding)
+
+In allen Views wurden einheitliche Abstände gesetzt:
+
+```xml
+<padding>
+    <Insets top="20" right="30" bottom="20" left="30"/>
+</padding>
+```
+
+> **Begründung:** Einheitliche Abstände sorgen für ein professionelles
+> und übersichtliches Erscheinungsbild.
+ 
+---
+
+#### 5.4.3 Logo in der Login-Ansicht
+
+Das Projekt-Logo (`Plan4Sign_Logo.png`) wurde in die `LoginView` eingebunden.
+Der Titel-Label wurde durch das Logo ersetzt.
+
+```xml
+<ImageView fitHeight="200.0" fitWidth="200.0" preserveRatio="true">
+    <image>
+        <Image url="@Plan4Sign_Logo.png"/>
+    </image>
+</ImageView>
+```
+
+> **Begründung:** Das Logo erhöht den Wiedererkennungswert der Anwendung
+> und ersetzt den einfachen Texttitel durch eine professionelle visuelle Darstellung.
+ 
+---
+
+#### 5.4.4 Zentrierung der Login-Ansicht
+
+Die `LoginView` wurde in ein `StackPane` eingebettet, damit der Inhalt
+bei jeder Fenstergröße zentriert bleibt:
+
+```xml
+<StackPane>
+    <VBox alignment="CENTER" fillWidth="false" ...>
+        ...
+    </VBox>
+</StackPane>
+```
+
+> **Begründung:** Das `StackPane` füllt immer das gesamte Fenster und
+> zentriert den VBox-Inhalt automatisch — unabhängig von der Fenstergröße.
+ 
+---
+
+#### 5.4.5 Datenbankstruktur – UNIQUE Constraint für Fach
+
+Um doppelte Einträge desselben Fachs im gleichen Bereich zu verhindern,
+wurde ein `UNIQUE`-Constraint in der Tabelle `Fach` ergänzt:
+
+```sql
+UNIQUE (fachname, BereichID)
+```
+
+> **Begründung:** Ohne diesen Constraint war es möglich, dasselbe Fach
+> mehrfach demselben Bereich zuzuordnen. Der Constraint verhindert
+> Duplikate auf Datenbankebene.
+ 
+---
+
+### 5.5 Git Commits – Woche 5
+
+```
+Add logout button, conflict check, remove dolmetscher, responsive layout, logo and padding
+```
+ 
+---
+
+### Status
+#### Woche 5: abgeschlossen ✅
