@@ -6,9 +6,12 @@ import com.brh.projekt_plan4sign_2026.model.Unterricht;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.Stage;
 
 import java.util.List;
 
@@ -60,6 +63,8 @@ public class TeilnehmerController {
                                 ? data.getValue().getDolmetschername()
                                 : "–"
                 ));
+
+        tableUnterricht.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
     }
 
     // Wird vom LoginController aufgerufen
@@ -79,6 +84,20 @@ public class TeilnehmerController {
         try {
             List<Unterricht> list = dao.getWithDetailsByKlasse(teilnehmer.getKlasseID());
             tableUnterricht.setItems(FXCollections.observableArrayList(list));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
+            );
+            Stage stage = (Stage) tableUnterricht.getScene().getWindow();
+            stage.setScene(new Scene(loader.load()));
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -20,9 +20,8 @@ public class App extends Application {
         Scene scene = new Scene(loader.load());
 
         stage.setTitle("Plan4Sign 2026");
-        stage.setWidth(800);
-        stage.setHeight(600);
-        stage.setResizable(false);
+        stage.setWidth(500);
+        stage.setHeight(500);
         stage.setScene(scene);
         stage.show();
     }

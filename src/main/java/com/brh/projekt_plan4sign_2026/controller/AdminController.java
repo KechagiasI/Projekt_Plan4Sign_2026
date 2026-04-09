@@ -8,12 +8,13 @@ import com.brh.projekt_plan4sign_2026.model.Unterricht;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.stage.Stage;
 
 import java.util.List;
+import java.util.Optional;
 
 public class AdminController {
 
@@ -50,6 +51,8 @@ public class AdminController {
         colFach.setCellValueFactory(data-> new javafx.beans.property.SimpleStringProperty(data.getValue().getFachname().toString()));
         colDolmetscher.setCellValueFactory(data-> new javafx.beans.property.SimpleStringProperty(data.getValue().getDolmetschername() != null ? data.getValue().getDolmetschername() : " kein "));
         colTeilnehmer.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTeilnehmername() != null ? data.getValue().getTeilnehmername() : "kein"));
+
+        tableUnterricht.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
         // Daten Load
         loadData();
@@ -95,6 +98,7 @@ public class AdminController {
             System.out.println("Bitte Auswahl treffen!");
             return;
         }
+
         try {
             DolmetscherDAO dolDAO = new DolmetscherDAO();
 
@@ -103,8 +107,8 @@ public class AdminController {
 
                 if (fullname.equals(name)) {
 
+                    // 1. Availability prüfen
                     AvailabilityDAO availabilityDAO = new AvailabilityDAO();
-
                     boolean frei = availabilityDAO.isAvailable(
                             d.getDolmetscherID(),
                             selected.getDate(),
@@ -121,14 +125,102 @@ public class AdminController {
                         return;
                     }
 
+                    // 2. Zeitkonflikt mit anderem Unterricht prüfen
                     UnterrichtDAO uDAO = new UnterrichtDAO();
+                    boolean konflikt = uDAO.hasConflict(
+                            d.getDolmetscherID(),
+                            selected.getUnterrichtID(),
+                            selected.getDate(),
+                            selected.getStartTime(),
+                            selected.getEndTime()
+                    );
 
-                    uDAO.assignDolmetscher( selected.getUnterrichtID(), d.getDolmetscherID());
+                    if (konflikt) {
+                        // Bestätigungsdialog anzeigen
+                        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+                        confirm.setTitle("Konflikt erkannt");
+                        confirm.setHeaderText("Dolmetscher bereits eingeplant");
+                        confirm.setContentText(
+                                "Der Dolmetscher " + fullname + " hat zu diesem Zeitpunkt " +
+                                        "bereits eine andere Unterrichtseinheit.\n\n" +
+                                        "Trotzdem zuweisen?"
+                        );
 
+                        Optional<ButtonType> result = confirm.showAndWait();
+
+                        // Wenn der Admin NICHT bestätigt → abbrechen
+                        if (result.isEmpty() || result.get() != ButtonType.OK) {
+                            return;
+                        }
+                    }
+
+                    // 3. Zuweisung durchführen
+                    uDAO.assignDolmetscher(selected.getUnterrichtID(), d.getDolmetscherID());
                     break;
                 }
             }
             loadData();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleRemove() {
+
+        Unterricht selected = tableUnterricht.getSelectionModel().getSelectedItem();
+
+        // Kein Unterricht ausgewählt
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Warnung");
+            alert.setHeaderText("Keine Auswahl");
+            alert.setContentText("Bitte eine Unterrichtseinheit auswählen.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Kein Dolmetscher zugewiesen → nichts zu entfernen
+        if (selected.getDolmetscherID() == null) {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Hinweis");
+            alert.setHeaderText("Kein Dolmetscher zugewiesen");
+            alert.setContentText("Dieser Unterrichtseinheit ist kein Dolmetscher zugewiesen.");
+            alert.showAndWait();
+            return;
+        }
+
+        // Bestätigung einholen
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Dolmetscher entfernen");
+        confirm.setHeaderText("Zuweisung aufheben");
+        confirm.setContentText("Möchten Sie den Dolmetscher von dieser Unterrichtseinheit entfernen?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        try {
+            UnterrichtDAO uDAO = new UnterrichtDAO();
+            uDAO.removeDolmetscher(selected.getUnterrichtID());
+            loadData();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
+            );
+            Stage stage = (Stage) tableUnterricht.getScene().getWindow();
+            stage.setScene(new Scene(loader.load()));
+            stage.show();
         } catch (Exception e) {
             e.printStackTrace();
         }

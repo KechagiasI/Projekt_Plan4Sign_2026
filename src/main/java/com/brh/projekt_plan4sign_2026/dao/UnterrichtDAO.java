@@ -362,4 +362,47 @@ public class UnterrichtDAO {
 
         statement.executeUpdate();
     }
+
+    // Entfernt den zugewiesenen Dolmetscher von einer Unterrichtseinheit (setzt auf NULL)
+    public void removeDolmetscher(int unterrichtID) throws SQLException {
+
+        String sql = "UPDATE Unterricht SET DolmetscherID = NULL WHERE UnterrichtID = ?";
+
+        Connection connection = DatabaseConnection.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);
+
+        statement.setInt(1, unterrichtID);
+        statement.executeUpdate();
+    }
+
+    // Prüft ob ein Dolmetscher zur gleichen Zeit bereits einen anderen Unterricht hat
+    public boolean hasConflict(int dolmetscherID, int unterrichtID,
+                               java.time.LocalDate date,
+                               java.time.LocalTime startTime,
+                               java.time.LocalTime endTime) throws SQLException {
+
+        // Sucht nach einem anderen Unterricht desselben Dolmetschers
+        // der sich zeitlich überschneidet – aber NICHT der aktuelle Unterricht selbst
+        String sql = "SELECT COUNT(*) FROM Unterricht " +
+                "WHERE DolmetscherID = ? " +
+                "AND UnterrichtID != ? " +
+                "AND date = ? " +
+                "AND starttime < ? " +
+                "AND endtime > ?";
+
+        Connection connection = DatabaseConnection.getConnection();
+        PreparedStatement statement = connection.prepareStatement(sql);
+
+        statement.setInt(1, dolmetscherID);
+        statement.setInt(2, unterrichtID);
+        statement.setDate(3, Date.valueOf(date));
+        statement.setTime(4, Time.valueOf(endTime));
+        statement.setTime(5, Time.valueOf(startTime));
+
+        ResultSet resultSet = statement.executeQuery();
+        resultSet.next();
+
+        // Gibt true zurück wenn mindestens 1 Konflikt gefunden wurde
+        return resultSet.getInt(1) > 0;
+    }
 }

@@ -2,37 +2,40 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
+<?import javafx.geometry.Insets?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.brh.projekt_plan4sign_2026.controller.AdminController"
       alignment="CENTER"
       spacing="20"
       prefWidth="800"
-      prefHeight="600">
+      prefHeight="600"
+      VBox.vgrow="ALWAYS">
+
+    <padding>
+        <Insets top="20" right="30" bottom="20" left="30"/>
+    </padding>
 
     <Label text="Administrator – Hauptmenü"
            style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
-    <!-- TableView -->
-
-    <TableView fx:id="tableUnterricht">
-
-       <columns>
-           <TableColumn fx:id="colDate" text="Datum" prefWidth="100"/>
-           <TableColumn fx:id="colStart" text="Start" prefWidth="80"/>
-           <TableColumn fx:id="colEnd" text="Ende" prefWidth="80"/>
-           <TableColumn fx:id="colKlasse" text="Klasse" prefWidth="80"/>
-           <TableColumn fx:id="colFach" text="Fach" prefWidth="120"/>
-           <TableColumn fx:id="colDolmetscher" text="Dolmetscher" prefWidth="150"/>
-           <TableColumn fx:id="colTeilnehmer" text="Teilnehmer" prefWidth="150"/>
-       </columns>
+    <TableView fx:id="tableUnterricht"
+               VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="colDate"        text="Datum"       prefWidth="100"/>
+            <TableColumn fx:id="colStart"       text="Start"       prefWidth="80"/>
+            <TableColumn fx:id="colEnd"         text="Ende"        prefWidth="80"/>
+            <TableColumn fx:id="colKlasse"      text="Klasse"      prefWidth="80"/>
+            <TableColumn fx:id="colFach"        text="Fach"        prefWidth="120"/>
+            <TableColumn fx:id="colDolmetscher" text="Dolmetscher" prefWidth="150"/>
+            <TableColumn fx:id="colTeilnehmer"  text="Teilnehmer"  prefWidth="150"/>
+        </columns>
     </TableView>
 
     <HBox spacing="10" alignment="CENTER">
-
         <ComboBox fx:id="comboDolmetscher" promptText="Dolmetscher auswählen"/>
-
         <Button text="Zuweisen" onAction="#handleAssign"/>
-
+        <Button text="Entfernen" onAction="#handleRemove"/>
+        <Button text="Abmelden" onAction="#handleLogout"/>
     </HBox>
 
 </VBox>
