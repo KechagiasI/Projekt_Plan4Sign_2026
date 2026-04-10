@@ -1,10 +1,10 @@
-# Projektauswertung & Reflexion – Projekt_DoIT
+# Projektauswertung und Reflexion – Projekt_DoIT
 
 ---
 
 ## 1. Projektzusammenfassung
 
-Ziel dieses Projekts ist die Entwicklung einer Desktop-Anwendung
+Ziel dieses Projekts war die Entwicklung einer Desktop-Anwendung
 zur strukturierten Planung und Organisation von Dolmetschereinsätzen
 im schulischen Umfeld.
 
@@ -36,7 +36,7 @@ manuelle Planung durch eine strukturierte, softwaregestützte Lösung.
 - Die DAO-Struktur mit PreparedStatement hat eine saubere und
   sichere Datenbankanbindung gewährleistet.
 
-- Die Verfügbarkeitsprüfung und Konfliktprüfung konnten erfolgreich
+- Die Verfügbarkeits- und Konfliktprüfung konnten erfolgreich
   in die Zuweisungslogik integriert werden.
 
 ---
@@ -110,7 +110,7 @@ manuelle Planung durch eine strukturierte, softwaregestützte Lösung.
 
 - JDBC und SQL: Datenbankanbindung über JDBC, Implementierung von
   PreparedStatements zum Schutz vor SQL-Injection, JOIN-Abfragen
-  für die UI-Darstellung sowie korrekter Umgang mit NULL-Werten
+  für die UI-Darstellung sowie korrekter Umgang mit NULL-Werten in SQL-Abfragen
   über getObject().
 
 - BCrypt-Passwort-Hashing: Sichere Speicherung von Passwörtern
@@ -195,6 +195,8 @@ manuelle Planung durch eine strukturierte, softwaregestützte Lösung.
 | Abmelden                               | Logout-Button drücken                              | Weiterleitung zur Login-Ansicht               | Erfolgreich |
 | DolmetscherView                        | Login als Dolmetscher                              | Eigene Unterrichtseinheiten werden angezeigt  | Erfolgreich |
 | TeilnehmerView                         | Login als Teilnehmer                               | Stundenplan der eigenen Klasse wird angezeigt | Erfolgreich |
+
+Alle definierten Testfälle wurden erfolgreich durchgeführt.
 
 ---
 
