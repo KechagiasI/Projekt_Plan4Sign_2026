@@ -7,94 +7,116 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * FachDAO.java – Datenzugriffsklasse für die Tabelle "Fach"
+ * Kapselt alle Datenbankoperationen für Unterrichtsfächer
+ *
+ * Methoden:
+ * - getAll()        → Alle Fächer
+ * - getByBereich()  → Gefiltert nach Bereich
+ * - delete()        → Fach löschen
+ *
+ * Hinweis: UNIQUE(fachname, BereichID) verhindert doppelte Einträge
+ */
 public class FachDAO {
-    // Holt alle Fächer aus der Datenbank
+
+    /**
+     * Holt alle Fächer aus der Datenbank
+     * Rückgabe: Liste aller Fach-Objekte
+     */
     public List<Fach> getAll() throws SQLException {
 
-        // Liste für die Ergebnisse (Java-Objekte)
+        // Ergebnisliste für Java-Objekte
         List<Fach> list = new ArrayList<>();
 
-        // SQL-Abfrage: alle Datensätze aus der Tabelle Fach
+        // SQL: alle Datensätze aus der Tabelle Fach
         String sql = "SELECT * FROM Fach";
 
         // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
         // Statement zum Ausführen der SQL-Abfrage
-        // Hinweis: PreparedStatement wäre auch hier Best Practice
         Statement statement = connection.createStatement();
 
-        // Ergebnis der Abfrage (ResultSet = Tabelle von Daten)
+        // Abfrage ausführen → gibt ResultSet (Tabelle von Ergebnissen) zurück
         ResultSet resultSet = statement.executeQuery(sql);
 
-        // Iteration über alle Datensätze
+        // Alle Zeilen des Ergebnisses durchlaufen
         while (resultSet.next()) {
 
-            // Werte aus der aktuellen Zeile lesen
+            // Spaltenwerte der aktuellen Zeile lesen
             int fachID = resultSet.getInt("FachID");
             String fachname = resultSet.getString("fachname");
+
+            // BOOLEAN aus DB lesen: true = Dolmetscher erforderlich
             boolean isInterpreterRelevant = resultSet.getBoolean("isinterpreterRelevant");
             int bereichID = resultSet.getInt("BereichID");
 
-            // Umwandlung in ein Java-Objekt (Model)
+            // DB-Zeile → Java-Objekt (Mapping)
             list.add(new Fach(fachID, fachname, isInterpreterRelevant, bereichID));
         }
-
-        // Rückgabe der vollständigen Liste
         return list;
-
     }
 
-    // Holt alle Fächer zu einem bestimmten Bereich (Filter)
+    /**
+     * Holt alle Fächer eines bestimmten Bereichs
+     * WHERE BereichID = ? → nur Fächer des gewählten Bereichs
+     * Beispiel: BereichID=2 → alle FIA-Fächer
+     */
     public List<Fach> getByBereich(int bereichID) throws SQLException {
 
-        // Liste für die gefilterten Ergebnisse
+        // Ergebnisliste für gefilterte Java-Objekte
         List<Fach> list = new ArrayList<>();
 
-        // SQL-Abfrage mit Bedingung (WHERE)
+        // SQL: Suche nach BereichID
         String sql = "SELECT * FROM Fach WHERE BereichID = ?";
 
-        // Verbindung holen
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
-        // PreparedStatement (sicher + mit Parameter)
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         PreparedStatement statement = connection.prepareStatement(sql);
 
-        // Setzt den Wert für den Platzhalter (BereichID)
+        // BereichID als Parameter setzen
         statement.setInt(1, bereichID);
 
-        // Führt die Abfrage aus
+        // Abfrage ausführen → gibt ResultSet (Tabelle von Ergebnissen) zurück
         ResultSet resultSet = statement.executeQuery();
 
-        // Durchlaufen der Ergebnisse
+        // Alle Zeilen des Ergebnisses durchlaufen
         while (resultSet.next()) {
             int fachID = resultSet.getInt("FachID");
             String fachname = resultSet.getString("fachname");
+
+            // BOOLEAN aus DB lesen: true = Dolmetscher erforderlich
             boolean isInterpreterRelevant = resultSet.getBoolean("isinterpreterRelevant");
 
-            // Objekt erstellen und zur Liste hinzufügen
+            // bereichID kommt direkt aus dem Parameter
             list.add(new Fach(fachID, fachname, isInterpreterRelevant, bereichID));
         }
         return list;
     }
 
-    // Löscht ein Fach anhand seiner ID
+    /**
+     * Löscht ein Fach anhand seiner ID
+     * Hinweis: ON DELETE RESTRICT verhindert Löschung
+     * wenn noch Unterrichtseinheiten mit diesem Fach verknüpft sind
+     */
     public void delete(int fachID) throws SQLException {
 
-        // SQL-Delete mit Bedingung
+        // SQL: Datensatz anhand der ID löschen
         String sql = "DELETE FROM Fach WHERE FachID = ?";
 
-        // Verbindung holen
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
-        // PreparedStatement verwenden
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         PreparedStatement statement = connection.prepareStatement(sql);
 
-        // ID setzen
+        // ID als Parameter setzen
         statement.setInt(1, fachID);
 
         // Löschung ausführen
         statement.executeUpdate();
     }
-
 }

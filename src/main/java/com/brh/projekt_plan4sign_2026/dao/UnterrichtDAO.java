@@ -9,13 +9,32 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * UnterrichtDAO.java – Datenzugriffsklasse für die Tabelle "Unterricht"
+ * Kapselt alle Datenbankoperationen für Unterrichtseinheiten
+ *
+ * Methoden:
+ * - getAllWithDetails()              → Alle Einheiten mit JOIN-Daten (Admin)
+ * - getWithDetailsByDolmetscher()   → Gefiltert nach Dolmetscher (DolmetscherView)
+ * - getWithDetailsByKlasse()        → Gefiltert nach Klasse (TeilnehmerView)
+ * - assignDolmetscher()             → Dolmetscher zuweisen
+ * - removeDolmetscher()             → Zuweisung aufheben (NULL setzen)
+ * - hasConflict()                   → Zeitkonflikt prüfen
+ */
 public class UnterrichtDAO {
 
+    /**
+     * Holt alle Unterrichtseinheiten mit JOIN-Daten für die AdminView
+     * JOIN-Tabellen: Klasse, Fach, Dolmetscher, Teilnehmer
+     * LEFT JOIN bei Dolmetscher/Teilnehmer → NULL-Werte erlaubt
+     */
     public List<Unterricht> getAllWithDetails() throws SQLException {
-        // Liste für Ergebnisse
+
         List<Unterricht> unterrichts = new ArrayList<>();
 
-        // SQL mit JOIN → holt alle Daten für Anzeige (UI)
+        // SQL mit mehreren JOINs → holt alle Anzeigedaten in einer Abfrage
+        // LEFT JOIN Dolmetscher → NULL wenn kein Dolmetscher zugewiesen
+        // LEFT JOIN Teilnehmer  → NULL wenn kein Teilnehmer in der Klasse
         String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
                 "u.KlasseID, u.FachID, u.DolmetscherID, " +
                 "k.klassename, f.fachname, " +
@@ -28,16 +47,16 @@ public class UnterrichtDAO {
                 "LEFT JOIN Teilnehmer t ON t.KlasseID = u.KlasseID " +
                 "ORDER BY u.date, u.starttime";
 
-        // Verbindung zur DB
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
-        // SQL ausführen
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         Statement statement = connection.createStatement();
+        // Abfrage ausführen → gibt ResultSet (Tabelle von Ergebnissen) zurück
         ResultSet resultSet = statement.executeQuery(sql);
 
-        // Durch alle Ergebnisse gehen
         while (resultSet.next()) {
 
-            // Basisdaten (aus Tabelle Unterricht)
+            // Basisdaten aus der Tabelle Unterricht
             int unterrichtID = resultSet.getInt("UnterrichtID");
             LocalDate date = resultSet.getDate("date").toLocalDate();
             LocalTime starttime = resultSet.getTime("starttime").toLocalTime();
@@ -45,34 +64,35 @@ public class UnterrichtDAO {
             int klasseID = resultSet.getInt("KlasseID");
             int fachID = resultSet.getInt("FachID");
 
-            // Dolmetscher kann NULL sein → deshalb Integer
-            Integer dolmetscherID = resultSet.getObject("DolmetscherID")
-                    != null ? resultSet.getInt("DolmetscherID") : null;
+            // NULL-Check: DolmetscherID kann NULL sein → Integer statt int
+            Integer dolmetscherID = resultSet.getObject("DolmetscherID") != null
+                    ? resultSet.getInt("DolmetscherID") : null;
 
-            // Objekt erstellen (nur Basisdaten)
+            // Objekt mit Basisdaten erstellen
             Unterricht u = new Unterricht(
                     unterrichtID, date, starttime, endtime, klasseID, fachID, dolmetscherID);
 
-            // Zusatzdaten (für Anzeige im UI)
+            // Anzeigefelder nachträglich setzen (kommen aus den JOINs)
             u.setKlassename(resultSet.getString("klassename"));
             u.setFachname(resultSet.getString("fachname"));
             u.setDolmetschername(resultSet.getString("dolmetschername"));
             u.setTeilnehmername(resultSet.getString("teilnehmername"));
 
-            // Objekt zur Liste hinzufügen
             unterrichts.add(u);
         }
-
-        // Ergebnis zurückgeben
         return unterrichts;
     }
 
-    // Holt alle Unterrichtseinheiten eines Dolmetschers – mit JOIN-Details für die Anzeige
+    /**
+     * Holt alle Unterrichtseinheiten eines bestimmten Dolmetschers
+     * Wird in der DolmetscherView verwendet (nach Login gefiltert)
+     * WHERE u.DolmetscherID = ? → nur eigene Einheiten
+     */
     public List<Unterricht> getWithDetailsByDolmetscher(int dolmetscherID) throws SQLException {
 
         List<Unterricht> unterrichts = new ArrayList<>();
 
-        // Gleiche Struktur wie getAllWithDetails(), aber mit WHERE-Filter
+        // Gleiche JOIN-Struktur wie getAllWithDetails() + WHERE-Filter
         String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
                 "u.KlasseID, u.FachID, u.DolmetscherID, " +
                 "k.klassename, f.fachname, " +
@@ -95,7 +115,6 @@ public class UnterrichtDAO {
         ResultSet resultSet = statement.executeQuery();
 
         while (resultSet.next()) {
-
             int unterrichtID = resultSet.getInt("UnterrichtID");
             LocalDate date = resultSet.getDate("date").toLocalDate();
             LocalTime starttime = resultSet.getTime("starttime").toLocalTime();
@@ -107,7 +126,6 @@ public class UnterrichtDAO {
                     ? resultSet.getInt("DolmetscherID") : null;
 
             Unterricht u = new Unterricht(unterrichtID, date, starttime, endtime, klasseID, fachID, dID);
-
             u.setKlassename(resultSet.getString("klassename"));
             u.setFachname(resultSet.getString("fachname"));
             u.setDolmetschername(resultSet.getString("dolmetschername"));
@@ -115,15 +133,19 @@ public class UnterrichtDAO {
 
             unterrichts.add(u);
         }
-
         return unterrichts;
     }
 
-    // Holt alle Unterrichtseinheiten einer Klasse – mit JOIN-Details für die Anzeige
+    /**
+     * Holt alle Unterrichtseinheiten einer bestimmten Klasse
+     * Wird in der TeilnehmerView verwendet (nach Login gefiltert)
+     * WHERE u.KlasseID = ? → nur Einheiten der eigenen Klasse
+     */
     public List<Unterricht> getWithDetailsByKlasse(int klasseID) throws SQLException {
 
         List<Unterricht> unterrichts = new ArrayList<>();
 
+        // Gleiche JOIN-Struktur wie getAllWithDetails() + WHERE-Filter
         String sql = "SELECT u.UnterrichtID, u.date, u.starttime, u.endtime, " +
                 "u.KlasseID, u.FachID, u.DolmetscherID, " +
                 "k.klassename, f.fachname, " +
@@ -144,7 +166,6 @@ public class UnterrichtDAO {
         ResultSet resultSet = statement.executeQuery();
 
         while (resultSet.next()) {
-
             int unterrichtID = resultSet.getInt("UnterrichtID");
             LocalDate date = resultSet.getDate("date").toLocalDate();
             LocalTime starttime = resultSet.getTime("starttime").toLocalTime();
@@ -156,7 +177,6 @@ public class UnterrichtDAO {
                     ? resultSet.getInt("DolmetscherID") : null;
 
             Unterricht u = new Unterricht(unterrichtID, date, starttime, endtime, kID, fachID, dID);
-
             u.setKlassename(resultSet.getString("klassename"));
             u.setFachname(resultSet.getString("fachname"));
             u.setDolmetschername(resultSet.getString("dolmetschername"));
@@ -164,125 +184,83 @@ public class UnterrichtDAO {
 
             unterrichts.add(u);
         }
-
         return unterrichts;
     }
 
-    // Holt alle Unterrichtseinheiten aus der Datenbank
+    /**
+     * Holt alle Unterrichtseinheiten ohne JOIN-Daten (nur Basisdaten)
+     * Wird intern verwendet wenn keine Anzeigedaten benötigt werden
+     */
     public List<Unterricht> getAll() throws SQLException {
 
-        // Liste für die Ergebnisse (Java-Objekte)
         List<Unterricht> list = new ArrayList<>();
-
-        // SQL-Abfrage: alle Datensätze aus der Tabelle Unterricht
         String sql = "SELECT * FROM Unterricht";
 
-        // Verbindung zur Datenbank holen
         Connection connection = DatabaseConnection.getConnection();
-
-        // Statement zum Ausführen der Abfrage
-        // Hinweis: PreparedStatement wäre Best Practice
         Statement statement = connection.createStatement();
-
-        // Ergebnis der Abfrage
         ResultSet resultSet = statement.executeQuery(sql);
 
-        // Iteration über alle Datensätze
         while (resultSet.next()) {
-
             int unterrichtID = resultSet.getInt("UnterrichtID");
-
-            // Umwandlung von SQL-Date → LocalDate
+            // SQL-Date → LocalDate
             LocalDate date = resultSet.getDate("date").toLocalDate();
-
-            // Umwandlung von SQL-Time → LocalTime
+            // SQL-Time → LocalTime
             LocalTime startTime = resultSet.getTime("starttime").toLocalTime();
             LocalTime endTime = resultSet.getTime("endtime").toLocalTime();
-
-            // Fremdschlüssel (Beziehungen)
             int klasseID = resultSet.getInt("KlasseID");
             int fachID = resultSet.getInt("FachID");
-
-            // DolmetscherID kann NULL sein → Verwendung von Integer statt int
+            // NULL-Check für optionalen Dolmetscher
             Integer dolmetscherID = resultSet.getObject("DolmetscherID") != null
-                    ? resultSet.getInt("DolmetscherID")
-                    : null;
+                    ? resultSet.getInt("DolmetscherID") : null;
 
-            // Mapping DB → Java-Objekt
-            list.add(new Unterricht(
-                    unterrichtID,
-                    date,
-                    startTime,
-                    endTime,
-                    klasseID,
-                    fachID,
-                    dolmetscherID
-            ));
+            list.add(new Unterricht(unterrichtID, date, startTime, endTime,
+                    klasseID, fachID, dolmetscherID));
         }
-
         return list;
     }
 
-    // Holt alle Unterrichtseinheiten einer bestimmten Klasse
+    /**
+     * Holt alle Unterrichtseinheiten einer bestimmten Klasse (ohne JOIN)
+     */
     public List<Unterricht> getByKlasse(int klasseID) throws SQLException {
 
         List<Unterricht> list = new ArrayList<>();
-
-        // SQL-Abfrage mit Filter
         String sql = "SELECT * FROM Unterricht WHERE KlasseID = ?";
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
-
-        // Parameter setzen
         statement.setInt(1, klasseID);
-
         ResultSet resultSet = statement.executeQuery();
 
         while (resultSet.next()) {
-
             int unterrichtID = resultSet.getInt("UnterrichtID");
             LocalDate date = resultSet.getDate("date").toLocalDate();
             LocalTime startTime = resultSet.getTime("starttime").toLocalTime();
             LocalTime endTime = resultSet.getTime("endtime").toLocalTime();
             int fachID = resultSet.getInt("FachID");
-
-            // NULL-Check für Dolmetscher
             Integer dolmetscherID = resultSet.getObject("DolmetscherID") != null
-                    ? resultSet.getInt("DolmetscherID")
-                    : null;
+                    ? resultSet.getInt("DolmetscherID") : null;
 
-            list.add(new Unterricht(
-                    unterrichtID,
-                    date,
-                    startTime,
-                    endTime,
-                    klasseID,
-                    fachID,
-                    dolmetscherID
-            ));
+            list.add(new Unterricht(unterrichtID, date, startTime, endTime,
+                    klasseID, fachID, dolmetscherID));
         }
-
         return list;
     }
 
-    // Holt alle Unterrichtseinheiten eines bestimmten Dolmetschers
+    /**
+     * Holt alle Unterrichtseinheiten eines bestimmten Dolmetschers (ohne JOIN)
+     */
     public List<Unterricht> getByDolmetscher(int dolmetscherID) throws SQLException {
 
         List<Unterricht> list = new ArrayList<>();
-
-        // SQL-Abfrage nach DolmetscherID
         String sql = "SELECT * FROM Unterricht WHERE DolmetscherID = ?";
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
-
         statement.setInt(1, dolmetscherID);
-
         ResultSet resultSet = statement.executeQuery();
 
         while (resultSet.next()) {
-
             int unterrichtID = resultSet.getInt("UnterrichtID");
             LocalDate date = resultSet.getDate("date").toLocalDate();
             LocalTime startTime = resultSet.getTime("starttime").toLocalTime();
@@ -290,109 +268,105 @@ public class UnterrichtDAO {
             int klasseID = resultSet.getInt("KlasseID");
             int fachID = resultSet.getInt("FachID");
 
-            // Hier ist DolmetscherID bekannt (Parameter)
-            list.add(new Unterricht(
-                    unterrichtID,
-                    date,
-                    startTime,
-                    endTime,
-                    klasseID,
-                    fachID,
-                    dolmetscherID
-            ));
+            list.add(new Unterricht(unterrichtID, date, startTime, endTime,
+                    klasseID, fachID, dolmetscherID));
         }
-
         return list;
     }
 
-    // Fügt eine neue Unterrichtseinheit ein
+    /**
+     * Fügt eine neue Unterrichtseinheit in die Datenbank ein
+     * DolmetscherID kann NULL sein → setNull() verwenden
+     */
     public void insert(Unterricht unterricht) throws SQLException {
 
-        // SQL-Insert mit mehreren Parametern
         String sql = "INSERT INTO Unterricht (date, starttime, endtime, KlasseID, FachID, DolmetscherID) " +
                 "VALUES (?, ?, ?, ?, ?, ?)";
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
 
-        // Java → SQL Typen umwandeln
+        // Java-Typen → SQL-Typen umwandeln
         statement.setDate(1, Date.valueOf(unterricht.getDate()));
         statement.setTime(2, Time.valueOf(unterricht.getStartTime()));
         statement.setTime(3, Time.valueOf(unterricht.getEndTime()));
-
         statement.setInt(4, unterricht.getKlasseID());
         statement.setInt(5, unterricht.getFachID());
 
-        // NULL-Wert behandeln (optionaler Dolmetscher)
+        // NULL-Behandlung: Dolmetscher ist optional
         if (unterricht.getDolmetscherID() != null) {
             statement.setInt(6, unterricht.getDolmetscherID());
         } else {
             statement.setNull(6, Types.INTEGER);
         }
-
         statement.executeUpdate();
     }
 
-    // Weist einem Unterricht einen Dolmetscher zu (UPDATE)
+    /**
+     * Weist einem Unterricht einen Dolmetscher zu
+     * UPDATE: setzt DolmetscherID auf den gewählten Wert
+     * Wird in AdminController.handleAssign() aufgerufen
+     */
     public void assignDolmetscher(int unterrichtID, int dolmetscherID) throws SQLException {
 
-        // SQL-Update
         String sql = "UPDATE Unterricht SET DolmetscherID = ? WHERE UnterrichtID = ?";
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
-
-        // Parameter setzen
         statement.setInt(1, dolmetscherID);
         statement.setInt(2, unterrichtID);
-
-        // Änderung ausführen
         statement.executeUpdate();
     }
 
-    // Löscht eine Unterrichtseinheit anhand der ID
+    /**
+     * Löscht eine Unterrichtseinheit anhand der ID
+     */
     public void delete(int unterrichtID) throws SQLException {
 
         String sql = "DELETE FROM Unterricht WHERE UnterrichtID = ?";
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
-
         statement.setInt(1, unterrichtID);
-
         statement.executeUpdate();
     }
 
-    // Entfernt den zugewiesenen Dolmetscher von einer Unterrichtseinheit (setzt auf NULL)
+    /**
+     * Entfernt den zugewiesenen Dolmetscher von einer Unterrichtseinheit
+     * UPDATE: setzt DolmetscherID auf NULL
+     * Wird in AdminController.handleRemove() aufgerufen
+     */
     public void removeDolmetscher(int unterrichtID) throws SQLException {
 
         String sql = "UPDATE Unterricht SET DolmetscherID = NULL WHERE UnterrichtID = ?";
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
-
         statement.setInt(1, unterrichtID);
         statement.executeUpdate();
     }
 
-    // Prüft ob ein Dolmetscher zur gleichen Zeit bereits einen anderen Unterricht hat
+    /**
+     * Prüft ob ein Dolmetscher zur gleichen Zeit bereits einen anderen Unterricht hat
+     * Zeitkonflikt-Logik: starttime < endTime AND endtime > startTime
+     * AND UnterrichtID != ? → aktueller Unterricht wird ausgeschlossen
+     * Wird in AdminController.handleAssign() VOR der Zuweisung aufgerufen
+     * Rückgabe: true = Konflikt vorhanden, false = kein Konflikt
+     */
     public boolean hasConflict(int dolmetscherID, int unterrichtID,
                                java.time.LocalDate date,
                                java.time.LocalTime startTime,
                                java.time.LocalTime endTime) throws SQLException {
 
-        // Sucht nach einem anderen Unterricht desselben Dolmetschers
-        // der sich zeitlich überschneidet – aber NICHT der aktuelle Unterricht selbst
         String sql = "SELECT COUNT(*) FROM Unterricht " +
                 "WHERE DolmetscherID = ? " +
-                "AND UnterrichtID != ? " +
-                "AND date = ? " +
-                "AND starttime < ? " +
-                "AND endtime > ?";
+                "AND UnterrichtID != ? " +  // aktuellen Unterricht ausschließen
+                "AND date = ? " +           // gleicher Tag
+                "AND starttime < ? " +      // andere Einheit beginnt vor unserem Ende
+                "AND endtime > ?";          // andere Einheit endet nach unserem Start
 
         Connection connection = DatabaseConnection.getConnection();
         PreparedStatement statement = connection.prepareStatement(sql);
-
         statement.setInt(1, dolmetscherID);
         statement.setInt(2, unterrichtID);
         statement.setDate(3, Date.valueOf(date));
@@ -402,7 +376,7 @@ public class UnterrichtDAO {
         ResultSet resultSet = statement.executeQuery();
         resultSet.next();
 
-        // Gibt true zurück wenn mindestens 1 Konflikt gefunden wurde
+        // COUNT(*) > 0 → mindestens ein Konflikt gefunden
         return resultSet.getInt(1) > 0;
     }
 }

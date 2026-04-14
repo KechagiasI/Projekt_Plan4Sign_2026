@@ -7,80 +7,94 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * KlasseDAO.java – Datenzugriffsklasse für die Tabelle "Klasse"
+ * Kapselt alle Datenbankoperationen für Schulklassen
+ *
+ * Methoden:
+ * - getAll()    → Alle Klassen
+ * - insert()    → Neue Klasse einfügen
+ * - delete()    → Klasse löschen
+ */
 public class KlasseDAO {
 
-    // Holt alle Klassen aus der Datenbank und gibt sie als Liste zurück
+    /**
+     * Holt alle Klassen aus der Datenbank
+     * Rückgabe: Liste aller Klasse-Objekte
+     */
     public List<Klasse> getAll() throws SQLException {
 
-        // Liste für die Ergebnisse (Java-Objekte)
+        // Ergebnisliste für Java-Objekte
         List<Klasse> list = new ArrayList<>();
 
-        // SQL-Abfrage: alle Datensätze aus der Tabelle Klasse
+        // SQL: alle Datensätze aus der Tabelle Klasse
         String sql = "SELECT * FROM Klasse";
 
         // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
         // Statement zum Ausführen der SQL-Abfrage
-        // Hinweis: PreparedStatement wäre auch hier Best Practice
         Statement statement = connection.createStatement();
 
-        // Ergebnis der Abfrage (ResultSet = Tabelle von Daten)
+        // Abfrage ausführen → gibt ResultSet (Tabelle von Ergebnissen) zurück
         ResultSet resultSet = statement.executeQuery(sql);
 
-        // Iteration über alle Datensätze
+        // Alle Zeilen des Ergebnisses durchlaufen
         while (resultSet.next()) {
 
-            // Werte aus der aktuellen Zeile lesen (Spaltennamen aus DB)
+            // Spaltenwerte der aktuellen Zeile lesen
             int klasseID = resultSet.getInt("KlasseID");
             String klasseName = resultSet.getString("klassename");
             String room = resultSet.getString("room");
 
-            // Umwandlung in ein Java-Objekt (Model)
+            // DB-Zeile → Java-Objekt (Mapping)
             list.add(new Klasse(klasseID, klasseName, room));
         }
-
-        // Hinweis: ResultSet und Statement sollten in echten Projekten geschlossen werden
-        // Rückgabe der kompletten Liste
         return list;
     }
 
-    // Fügt eine neue Klasse in die Datenbank ein
+    /**
+     * Fügt eine neue Klasse in die Datenbank ein
+     */
     public void insert(Klasse klasse) throws SQLException {
 
-        // SQL-Insert mit zwei Platzhaltern (?)
+        // SQL: neuen Datensatz einfügen
         String sql = "INSERT INTO Klasse (klassename, room) VALUES (?, ?)";
 
-        // Verbindung holen
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
-        // PreparedStatement schützt vor SQL-Injection und setzt Werte sicher ein
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         PreparedStatement statement = connection.prepareStatement(sql);
 
-        // Setzt die Werte für die Platzhalter
+        // Werte als Parameter setzen
         statement.setString(1, klasse.getKlasseName());
         statement.setString(2, klasse.getRoom());
 
-        // Führt die Änderung in der Datenbank aus
+        // Einfügen ausführen
         statement.executeUpdate();
     }
 
-    // Löscht eine Klasse anhand ihrer ID
+    /**
+     * Löscht eine Klasse anhand ihrer ID
+     * Hinweis: ON DELETE RESTRICT verhindert Löschung
+     * wenn noch Teilnehmer oder Unterricht verknüpft sind
+     */
     public void delete(int klasseID) throws SQLException {
 
-        // SQL-Delete mit Bedingung
+        // SQL: Datensatz anhand der ID löschen
         String sql = "DELETE FROM Klasse WHERE KlasseID = ?";
 
-        // Verbindung holen
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
-        // PreparedStatement verwenden
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         PreparedStatement statement = connection.prepareStatement(sql);
 
-        // Setzt die ID als Parameter
+        // ID als Parameter setzen
         statement.setInt(1, klasseID);
 
-        // Führt die Löschung aus
+        // Löschung ausführen
         statement.executeUpdate();
     }
 }

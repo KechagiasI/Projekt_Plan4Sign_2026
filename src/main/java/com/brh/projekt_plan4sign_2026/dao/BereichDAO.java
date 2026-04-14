@@ -7,61 +7,95 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * BereichDAO.java – Datenzugriffsklasse für die Tabelle "Bereich"
+ * Kapselt alle Datenbankoperationen für Ausbildungsbereiche
+ *
+ * Methoden:
+ * - getAll()    → Alle Bereiche
+ * - insert()    → Neuen Bereich einfügen
+ * - delete()    → Bereich löschen
+ *
+ * Hinweis: ON DELETE RESTRICT verhindert Löschung
+ * wenn noch Fächer mit diesem Bereich verknüpft sind
+ */
 public class BereichDAO {
-    // Holt alle Bereiche aus der Datenbank und gibt sie als Liste zurück
+
+    /**
+     * Holt alle Bereiche aus der Datenbank
+     * Rückgabe: Liste aller Bereich-Objekte
+     */
     public List<Bereich> getAll() throws SQLException {
 
-        // Liste für die Ergebnisse (Java-Objekte)
+        // Ergebnisliste für Java-Objekte
         List<Bereich> list = new ArrayList<>();
 
-        // SQL-Abfrage: alle Datensätze aus der Tabelle BEREICH
-        String sql = "SELECT * FROM BEREICH";
+        // SQL: alle Datensätze aus der Tabelle Bereich
+        String sql = "SELECT * FROM Bereich";
 
         // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
+
         // Statement zum Ausführen der SQL-Abfrage
-        // Hinweis: Besser wäre PreparedStatement (auch ohne Parameter → Best Practice)
         Statement statement = connection.createStatement();
-        // Ergebnis der Abfrage (Tabelle von Datensätzen)
+
+        // Abfrage ausführen → gibt ResultSet (Tabelle von Ergebnissen) zurück
         ResultSet resultSet = statement.executeQuery(sql);
 
-        // Iteration über alle Datensätze im ResultSet
+        // Alle Zeilen des Ergebnisses durchlaufen
         while (resultSet.next()) {
-            // Werte aus der aktuellen Zeile lesen (Spaltennamen aus DB!)
+
+            // Spaltenwerte der aktuellen Zeile lesen
             int bereichID = resultSet.getInt("BereichID");
-            String bereich = resultSet.getString("bereichname");
-            // Umwandlung in ein Java-Objekt (Model)
-            list.add(new Bereich(bereichID, bereich));
+            String bereichName = resultSet.getString("bereichname");
+
+            // DB-Zeile → Java-Objekt (Mapping)
+            list.add(new Bereich(bereichID, bereichName));
         }
-        // Hinweis: ResultSet und Statement sollten in echten Projekten geschlossen werden (Resource Management)
-        // Rückgabe der kompletten Liste
         return list;
     }
-    // Fügt einen neuen Bereich in die Datenbank ein
+
+    /**
+     * Fügt einen neuen Bereich in die Datenbank ein
+     */
     public void insert(Bereich bereich) throws SQLException {
-        // SQL-Insert mit Platzhalter (?)
+
+        // SQL: neuen Datensatz einfügen
         String sql = "INSERT INTO Bereich (bereichname) VALUES (?)";
-        // Verbindung holen
+
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
 
-        // PreparedStatement schützt vor SQL-Injection und setzt Werte sicher ein
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         PreparedStatement statement = connection.prepareStatement(sql);
-        // Setzt den Wert für den Platzhalter (1. Parameter)
+
+        // Bereichsname als Parameter setzen
         statement.setString(1, bereich.getBereichName());
-        // Führt die Änderung in der Datenbank aus (INSERT, UPDATE, DELETE)
+
+        // Einfügen ausführen
         statement.executeUpdate();
     }
-    // Löscht einen Bereich anhand seiner ID
+
+    /**
+     * Löscht einen Bereich anhand seiner ID
+     * Hinweis: ON DELETE RESTRICT verhindert Löschung
+     * wenn noch Fächer mit diesem Bereich verknüpft sind
+     */
     public void delete(int bereichID) throws SQLException {
-        // SQL-Delete mit Bedingung
-        String sql = "DELETE FROM BEREICH WHERE bereichID = ?";
-        // Verbindung holen
+
+        // SQL: Datensatz anhand der ID löschen
+        String sql = "DELETE FROM Bereich WHERE BereichID = ?";
+
+        // Verbindung zur Datenbank holen (Singleton)
         Connection connection = DatabaseConnection.getConnection();
-        // PreparedStatement verwenden (sicher und flexibel)
+
+        // PreparedStatement → sicherer als Statement, verhindert SQL-Injection
         PreparedStatement statement = connection.prepareStatement(sql);
-        // Setzt die ID als Parameter
+
+        // ID als Parameter setzen
         statement.setInt(1, bereichID);
-        // Führt die Löschung aus
+
+        // Löschung ausführen
         statement.executeUpdate();
     }
 }

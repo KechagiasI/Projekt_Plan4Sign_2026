@@ -10,78 +10,78 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * UserDAO.java – Datenzugriffsklasse für die Tabelle "User"
+ * Kapselt alle Datenbankoperationen für Benutzer
+ * Verwendet: PreparedStatement (Schutz vor SQL-Injection)
+ * Verbindung über: DatabaseConnection (Singleton)
+ */
 public class UserDAO {
 
-    // Holt alle Benutzer aus der Datenbank und gibt sie als Liste zurück
-    // Holt alle Benutzer → Mapping DB → Java-Liste
+    /**
+     * Holt alle Benutzer aus der Datenbank
+     * Rückgabe: Liste aller User-Objekte
+     */
     public List<User> getAll() throws SQLException {
 
-        // Liste für die Ergebnisse (Java-Objekte)
+        // Ergebnisliste für Java-Objekte
         List<User> list = new ArrayList<>();
 
-        // SQL-Abfrage: alle Datensätze aus der Tabelle User
+        // SQL: alle Datensätze aus der Tabelle User
         String sql = "SELECT * FROM User";
 
-        // try-with-resources: Connection und Statement werden automatisch geschlossen
-        // Verbindung zur Datenbank holen (Singleton)
+        // try-with-resources: Verbindung wird automatisch geschlossen
         try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
 
-        // Statement zum Ausführen der SQL-Abfrage
-        // Hinweis: PreparedStatement wäre auch hier Best Practice
-        PreparedStatement statement = connection.prepareStatement(sql);
-
-        // Ergebnis der Abfrage (ResultSet = Tabelle von Daten)
-        ResultSet resultSet = statement.executeQuery()) {
-
-            // Alle Datensätze durchlaufen
+            // Alle Zeilen des Ergebnisses durchlaufen
             while (resultSet.next()) {
 
-                // Werte aus der aktuellen Zeile lesen
+                // Spaltenwerte der aktuellen Zeile lesen
                 int userID = resultSet.getInt("UserID");
                 String username = resultSet.getString("username");
                 String passwordHash = resultSet.getString("passwordHash");
 
-                // Umwandlung des Rollen-Strings aus der DB in ein Enum
-                // DB-String → Enum (muss exakt übereinstimmen!)
+                // DB-String → Java-Enum (muss exakt übereinstimmen!)
                 Role role = Role.valueOf(resultSet.getString("role"));
 
-                // Erstellung eines User-Objekts (Mapping DB → Java)
+                // DB-Zeile → Java-Objekt (Mapping)
                 list.add(new User(userID, username, passwordHash, role));
             }
         }
-        // Rückgabe der kompletten Liste
         return list;
     }
-    // Sucht einen Benutzer anhand des Usernames (z.B. für Login)
-    // Login-Suche → gibt User oder Optional.empty()
-    // Optional<User>: gibt entweder einen User zurück oder Optional.empty() (kein null)
+
+    /**
+     * Sucht einen Benutzer anhand des Benutzernamens
+     * Wird beim Login verwendet
+     * Rückgabe: Optional<User> – verhindert NullPointerException
+     * Optional.of(user)    → Benutzer gefunden
+     * Optional.empty()     → Benutzer nicht gefunden
+     */
     public Optional<User> getByUsername(String username) throws SQLException {
 
-        // SQL-Abfrage mit WHERE-Bedingung
+        // SQL: Suche nach Username (eindeutig durch UNIQUE-Constraint)
         String sql = "SELECT * FROM User WHERE username = ?";
 
-        // Verbindung holen
         try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-        // PreparedStatement verwenden (sicher + Parameter)
-        PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            // Setzt den Username als Parameter
-            // setzen → schützt vor SQL-Injection
+            // Parameter setzen → schützt vor SQL-Injection
             statement.setString(1, username);
 
-            // Führt die Abfrage aus
             try (ResultSet resultSet = statement.executeQuery()) {
 
-                // Prüft, ob ein Ergebnis vorhanden ist
+                // Prüfen ob ein Ergebnis vorhanden ist
                 if (resultSet.next()) {
                     int userID = resultSet.getInt("UserID");
                     String passwordHash = resultSet.getString("passwordHash");
 
-                    // String → Enum
+                    // DB-String → Java-Enum
                     Role role = Role.valueOf(resultSet.getString("role"));
 
-                    // Rückgabe eines einzelnen User-Objekts
+                    // Benutzer gefunden → in Optional verpacken
                     return Optional.of(new User(userID, username, passwordHash, role));
                 }
             }
@@ -89,45 +89,48 @@ public class UserDAO {
         // Kein Benutzer gefunden → Optional.empty() statt null
         return Optional.empty();
     }
-    // Fügt einen neuen Benutzer in die Datenbank ein
-    // Neuer Benutzer → Passwort wird vorher gehasht!
+
+    /**
+     * Fügt einen neuen Benutzer in die Datenbank ein
+     * WICHTIG: Passwort wird vor dem Speichern gehasht (BCrypt)
+     * Klartext-Passwörter werden NIEMALS gespeichert
+     */
     public void insert(User user) throws SQLException {
 
-        // SQL-Insert mit drei Parametern
+        // SQL: neuen Datensatz einfügen
         String sql = "INSERT INTO User (username, passwordHash, role) VALUES (?, ?, ?)";
 
-        // Verbindung holen
         try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-        // PreparedStatement erstellen
-        PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            // Werte setzen
+            // Benutzername setzen
             statement.setString(1, user.getUsername());
 
-            // WICHTIG: Klartext → Hash (nie Klartext speichern!)
+            // Klartext → BCrypt-Hash (sicheres Speichern!)
             statement.setString(2, PasswordUtil.hash(user.getPasswordHash()));
 
-            // Enum → String (für Speicherung in DB)
+            // Enum → String (für DB-Spalte ENUM)
             statement.setString(3, user.getRole().name());
 
-            // Ausführen der Datenbankänderung
+            // Einfügen ausführen
             statement.executeUpdate();
         }
     }
-    // Löscht einen Benutzer anhand seiner ID
+
+    /**
+     * Löscht einen Benutzer anhand seiner ID
+     * Hinweis: Durch ON DELETE CASCADE/SET NULL werden
+     * verknüpfte Dolmetscher/Teilnehmer-Einträge angepasst
+     */
     public void delete(int userID) throws SQLException {
 
-        // SQL-Delete mit Bedingung
+        // SQL: Datensatz anhand der ID löschen
         String sql = "DELETE FROM User WHERE UserID = ?";
 
-        // Verbindung holen
         try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
 
-        // PreparedStatement verwenden
-        PreparedStatement statement = connection.prepareStatement(sql)) {
-
-            // ID setzen
+            // ID als Parameter setzen
             statement.setInt(1, userID);
 
             // Löschung ausführen
