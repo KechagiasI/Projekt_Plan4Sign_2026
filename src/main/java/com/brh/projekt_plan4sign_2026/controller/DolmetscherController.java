@@ -15,56 +15,71 @@ import javafx.stage.Stage;
 
 import java.util.List;
 
+/**
+ * DolmetscherController.java – Controller für DolmetscherView.fxml
+ * Zeigt den persönlichen Einsatzplan des eingeloggten Dolmetschers
+ *
+ * Ablauf:
+ * 1. initialize()      → Spalten verknüpfen, ResizePolicy setzen
+ * 2. setDolmetscher()  → wird vom LoginController aufgerufen (Dependency Injection)
+ * 3. loadData()        → lädt nur die eigenen Unterrichtseinheiten aus der DB
+ */
 public class DolmetscherController {
 
-    // Verbindung zu den UI-Elementen aus dem FXML
+    // ===== FXML-Verbindungen (verknüpft mit DolmetscherView.fxml) =====
     @FXML
-    private Label labelWillkommen;
+    private Label labelWillkommen;                 // Begrüßungstext
 
     @FXML
-    private TableView<Unterricht> tableUnterricht;
+    private TableView<Unterricht> tableUnterricht; // Haupttabelle
 
     @FXML
-    private TableColumn<Unterricht, String> colDate;
-
+    private TableColumn<Unterricht, String> colDate;        // Spalte: Datum
     @FXML
-    private TableColumn<Unterricht, String> colStart;
-
+    private TableColumn<Unterricht, String> colStart;       // Spalte: Startzeit
     @FXML
-    private TableColumn<Unterricht, String> colEnd;
-
+    private TableColumn<Unterricht, String> colEnd;         // Spalte: Endzeit
     @FXML
-    private TableColumn<Unterricht, String> colKlasse;
-
+    private TableColumn<Unterricht, String> colKlasse;      // Spalte: Klassenname
     @FXML
-    private TableColumn<Unterricht, String> colFach;
-
+    private TableColumn<Unterricht, String> colFach;        // Spalte: Fachname
     @FXML
-    private TableColumn<Unterricht, String> colTeilnehmer;
+    private TableColumn<Unterricht, String> colTeilnehmer;  // Spalte: Teilnehmername
 
-    // Der eingeloggte Dolmetscher – wird nach dem Laden der View gesetzt
+    // ===== Eingeloggter Dolmetscher (wird per Dependency Injection übergeben) =====
     private Dolmetscher dolmetscher;
 
-    // Wird automatisch aufgerufen wenn die View geladen wird
+    /**
+     * Wird automatisch von JavaFX beim Laden der View aufgerufen
+     * Verknüpft die Tabellenspalten mit den Getter-Methoden des Unterricht-Modells
+     * WICHTIG: loadData() wird hier NICHT aufgerufen,
+     * weil dolmetscher noch nicht gesetzt ist!
+     */
     @FXML
     private void initialize() {
 
-        // Spalten mit Daten aus dem Unterricht-Objekt verbinden
+        // Spalten mit Daten verknüpfen (Model → Tabelle)
+        // Datum als String formatieren
         colDate.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getDate().toString()));
 
+        // Startzeit als String formatieren
         colStart.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getStartTime().toString()));
 
+        // Endzeit als String formatieren
         colEnd.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getEndTime().toString()));
 
+        // Klassenname aus Anzeigefeld (per JOIN befüllt)
         colKlasse.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getKlassename()));
 
+        // Fachname aus Anzeigefeld (per JOIN befüllt)
         colFach.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getFachname()));
 
+        // Teilnehmername: "–" wenn kein Teilnehmer in der Klasse
         colTeilnehmer.setCellValueFactory(data ->
                 new SimpleStringProperty(
                         data.getValue().getTeilnehmername() != null
@@ -72,39 +87,63 @@ public class DolmetscherController {
                                 : "–"
                 ));
 
-        tableUnterricht.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+        // Spaltenbreiten automatisch auf Fensterbreite anpassen
+        // Funktioniert in JavaFX 21 nur im Controller, nicht in FXML
+        tableUnterricht.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
     }
 
-    // Wird vom LoginController aufgerufen – übergibt den eingeloggten Dolmetscher
+    /**
+     * Dependency Injection – wird vom LoginController aufgerufen
+     * Übergibt den eingeloggten Dolmetscher an diesen Controller
+     * Erst nach dieser Übergabe kann loadData() aufgerufen werden
+     * weil DolmetscherID benötigt wird
+     */
     public void setDolmetscher(Dolmetscher dolmetscher) {
         this.dolmetscher = dolmetscher;
 
-        // Begrüßungstext mit Name des Dolmetschers
+        // Begrüßungstext mit vollem Namen befüllen
         labelWillkommen.setText(
                 "Willkommen, " + dolmetscher.getFirstname() + " " + dolmetscher.getLastname()
         );
 
-        // Daten laden – erst jetzt, weil wir die ID brauchen
+        // Einsatzplan laden – erst jetzt möglich weil DolmetscherID bekannt ist
         loadData();
     }
 
-    // Holt die Unterrichtseinheiten dieses Dolmetschers aus der DB
+    /**
+     * Lädt die eigenen Unterrichtseinheiten aus der Datenbank
+     * Verwendet getWithDetailsByDolmetscher() → holt Daten mit JOIN
+     * Filtert nach DolmetscherID des eingeloggten Dolmetschers
+     */
     private void loadData() {
         UnterrichtDAO dao = new UnterrichtDAO();
         try {
-            List<Unterricht> list = dao.getWithDetailsByDolmetscher(dolmetscher.getDolmetscherID());
+            // Nur Unterrichtseinheiten dieses Dolmetschers laden
+            List<Unterricht> list = dao.getWithDetailsByDolmetscher(
+                    dolmetscher.getDolmetscherID());
+
+            // Liste → JavaFX ObservableList → Tabelle befüllen
             tableUnterricht.setItems(FXCollections.observableArrayList(list));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Abmelden: lädt LoginView und schließt die aktuelle Ansicht
+     * Wird durch Button "Abmelden" in DolmetscherView.fxml ausgelöst
+     */
     @FXML
     private void handleLogout() {
         try {
+            // LoginView.fxml laden
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
+                    getClass().getResource(
+                            "/com/brh/projekt_plan4sign_2026/view/LoginView.fxml")
             );
+
+            // Aktuelles Fenster holen und Scene wechseln
             Stage stage = (Stage) tableUnterricht.getScene().getWindow();
             stage.setScene(new Scene(loader.load()));
             stage.show();
