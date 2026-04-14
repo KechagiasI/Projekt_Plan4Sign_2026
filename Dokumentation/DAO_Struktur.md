@@ -1,12 +1,12 @@
-# 📘 DAO Cheat Sheet – Java JDBC (Für immer merken)
+# DAO Cheat Sheet – Java JDBC (Für immer merken)
 
 ---
 
-# 🔷 1. Was ist ein DAO?
+# 1. Was ist ein DAO?
 
-👉 DAO = Data Access Object
+DAO = Data Access Object
 
-➡️ Verbindung zwischen Java und Datenbank
+Verbindung zwischen Java und Datenbank
 
 **Aufgabe:**
 - Daten holen (SELECT)
@@ -16,7 +16,7 @@
 
 ---
 
-# 🔷 2. Grundlogik (IMMER gleich!)
+# 2. Grundlogik (IMMER gleich!)
 
 ```text
 1. Connection holen
@@ -27,13 +27,13 @@
 6. Ergebnis verarbeiten (nur bei SELECT)
 ```
 
-👉 Wichtig: Diese Schritte gelten für alle DAO-Methoden.
+Wichtig: Diese Schritte gelten für alle DAO-Methoden.
 
 ---
 
-# 🔷 3. Pattern für alle Methoden
+# 3. Pattern für alle Methoden
 
-## 🟢 SELECT (getAll) – ohne Filter
+## SELECT (getAll) – ohne Filter
 
 ```java
 Connection conn = DatabaseConnection.getConnection();
@@ -51,7 +51,7 @@ while(rs.next()) {
 
 ---
 
-## 🟢 SELECT (getByID / getByKlasse) – mit Filter
+## SELECT (getByID / getByKlasse) – mit Filter
 
 ```java
 Connection conn = DatabaseConnection.getConnection();
@@ -68,9 +68,9 @@ while(rs.next()) {
 
 ---
 
-## 🟢 SELECT mit JOIN – für UI-Anzeige
+## SELECT mit JOIN – für UI-Anzeige
 
-👉 Wenn man lesbare Daten (Namen statt IDs) für die Oberfläche braucht,
+Wenn man lesbare Daten (Namen statt IDs) für die Oberfläche braucht,
 verwendet man JOINs direkt im SQL.
 
 ```java
@@ -107,7 +107,7 @@ while(rs.next()) {
 
 ---
 
-## 🔴 INSERT
+## INSERT
 
 ```java
 Connection conn = DatabaseConnection.getConnection();
@@ -120,7 +120,7 @@ stmt.executeUpdate();
 
 ---
 
-## 🔴 DELETE
+## DELETE
 
 ```java
 Connection conn = DatabaseConnection.getConnection();
@@ -133,7 +133,7 @@ stmt.executeUpdate();
 
 ---
 
-# 🔷 4. Unterschied executeQuery vs executeUpdate
+# 4. Unterschied executeQuery vs executeUpdate
 
 | Methode          | Verwendung                  |
 |------------------|-----------------------------|
@@ -142,9 +142,9 @@ stmt.executeUpdate();
 
 ---
 
-# 🔷 5. ResultSet verstehen
+# 5. ResultSet verstehen
 
-👉 ResultSet = Tabelle von Daten
+ResultSet = Tabelle von Daten
 
 ```java
 while(resultSet.next()) {
@@ -155,9 +155,9 @@ while(resultSet.next()) {
 
 ---
 
-# 🔷 6. NULL-Werte sicher lesen (SEHR WICHTIG)
+# 6. NULL-Werte sicher lesen (SEHR WICHTIG)
 
-👉 Wenn ein Datenbankfeld NULL sein kann (z. B. `DolmetscherID`),
+Wenn ein Datenbankfeld NULL sein kann (z. B. `DolmetscherID`),
 darf man es nicht direkt mit `getInt()` lesen – das würde 0 zurückgeben.
 
 **Richtiger Weg:**
@@ -175,9 +175,9 @@ Integer dolmetscherID = resultSet.getObject("DolmetscherID") != null
 
 ---
 
-# 🔷 7. Object Mapping
+# 7. Object Mapping
 
-👉 DB → Java Object
+DB → Java Object
 
 **Einfaches Mapping (nur Basisdaten):**
 ```java
@@ -200,9 +200,9 @@ u.setTeilnehmername(resultSet.getString("teilnehmername"));
 
 ---
 
-# 🔷 8. PreparedStatement (SEHR WICHTIG)
+# 8. PreparedStatement (SEHR WICHTIG)
 
-👉 Warum?
+Warum?
 
 ✔ Schutz vor SQL-Injection  
 ✔ Sicherer Code  
@@ -210,9 +210,9 @@ u.setTeilnehmername(resultSet.getString("teilnehmername"));
 
 ---
 
-# 🔷 9. Singleton Connection
+# 9. Singleton Connection
 
-👉 Nur eine Verbindung im Programm
+Nur eine Verbindung im Programm
 
 ```java
 Connection conn = DatabaseConnection.getConnection();
@@ -223,7 +223,7 @@ Connection conn = DatabaseConnection.getConnection();
 
 ---
 
-# 🔷 10. DAO Template (Copy & Reuse)
+# 10. DAO Template (Copy & Reuse)
 
 ```java
 public class EntityDAO {
@@ -280,9 +280,9 @@ public class EntityDAO {
 
 ---
 
-# 🔷 11. Wie denkst du richtig?
+# 11. Wie denkst du richtig?
 
-👉 Immer von hier fängst du an:
+Immer von hier fängst du an:
 
 ```text
 Was will ich mit der Datenbank machen?
@@ -290,7 +290,7 @@ Was will ich mit der Datenbank machen?
 
 ---
 
-# 🔷 12. Fehler vermeiden
+# 12. Fehler vermeiden
 
 ❌ SQL im Controller  
 ❌ 100 Verbindungen öffnen  
@@ -301,7 +301,7 @@ Was will ich mit der Datenbank machen?
 
 ---
 
-# 🔷 13. Merksatz (Gold!)
+# 13. Merksatz (Gold!)
 
 ```text
 Connection → SQL → Statement → Parameter → Execute → Result

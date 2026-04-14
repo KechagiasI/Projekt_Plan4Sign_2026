@@ -112,7 +112,7 @@ Analyse & Projektvorbereitung (35 h)
 ---
 
 ## Status
-**Woche 1: abgeschlossen ✅**
+**Woche 1: abgeschlossen **
 
 ---
 
@@ -395,7 +395,7 @@ Zeitblockierungen eines Dolmetschers.
 ---
 
 ## Status
-**Woche 2: abgeschlossen ✅**
+**Woche 2: abgeschlossen **
 
 ---
 
@@ -612,7 +612,7 @@ Commits dieser Woche:
 ---
 
 ### Status
-#### Woche 3: abgeschlossen ✅
+#### Woche 3: abgeschlossen 
 
 ---
 
@@ -922,7 +922,7 @@ Implement TeilnehmerView and TeilnehmerController with login navigation
 ---
 
 ### Status
-#### Woche 4: abgeschlossen ✅
+#### Woche 4: abgeschlossen 
 
 # Dokumentation – Woche 5
 
@@ -1142,4 +1142,4 @@ Add logout button, conflict check, remove dolmetscher, responsive layout, logo a
 ---
 
 ### Status
-#### Woche 5: abgeschlossen ✅
+#### Woche 5: abgeschlossen 
