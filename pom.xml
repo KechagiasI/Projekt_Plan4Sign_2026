@@ -4,57 +4,79 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- ===== Projektidentifikation ===== -->
     <groupId>com.brh</groupId>
     <artifactId>Projekt_Plan4Sign_2026</artifactId>
     <version>1.0-SNAPSHOT</version>
     <name>Projekt_Plan4Sign_2026</name>
 
+    <!-- ===== Projekteigenschaften ===== -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.12.1</junit.version>
         <javafx.version>21.0.6</javafx.version>
     </properties>
 
+    <!-- ===== Abhängigkeiten (Libraries) ===== -->
     <dependencies>
-        <!-- MySQL JDBC Driver – ermöglicht die Verbindung zwischen Java und der MySQL-Datenbank -->
+
+        <!-- Datenbankanbindung: MySQL JDBC Driver -->
+        <!-- Ermöglicht die Verbindung zwischen Java und der MySQL-Datenbank -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.33</version>
         </dependency>
-        <!-- BCrypt για password hashing -->
+
+        <!-- Sicherheit: BCrypt Passwort-Hashing -->
+        <!-- Verschlüsselt Passwörter mit dem BCrypt-Algorithmus (Cost Factor 12) -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
-        <!-- JavaFX -->
+
+        <!-- Benutzeroberfläche: JavaFX Controls -->
+        <!-- Stellt UI-Elemente wie TableView, ComboBox, Button bereit -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
         </dependency>
+
+        <!-- Benutzeroberfläche: JavaFX FXML -->
+        <!-- Ermöglicht das Laden von FXML-Dateien für die View-Schicht -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
         </dependency>
-        <!-- JUnit -->
+
+        <!-- Tests: JUnit Jupiter API -->
+        <!-- Framework für Unit-Tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Tests: JUnit Jupiter Engine -->
+        <!-- Ausführungsengine für JUnit-Tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
+
+    <!-- ===== Build-Konfiguration ===== -->
     <build>
         <plugins>
+
+            <!-- Java Compiler Plugin: Setzt Java-Version auf 21 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -64,13 +86,15 @@
                     <target>21</target>
                 </configuration>
             </plugin>
+
+            <!-- JavaFX Maven Plugin: Startet die Anwendung mit mvn javafx:run -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <executions>
                     <execution>
-                        <!-- Default configuration for running with: mvn clean javafx:run -->
+                        <!-- Standardkonfiguration für: mvn clean javafx:run -->
                         <id>default-cli</id>
                         <configuration>
                             <mainClass>com.brh.projekt_plan4sign_2026/com.brh.projekt_plan4sign_2026.Launcher</mainClass>
@@ -84,6 +108,8 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
+
 </project>

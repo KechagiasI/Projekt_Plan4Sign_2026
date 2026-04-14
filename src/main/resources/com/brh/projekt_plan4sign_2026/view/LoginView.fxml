@@ -10,44 +10,59 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.layout.StackPane?>
 
+<!--
+    LoginView.fxml
+    Einstiegspunkt der Anwendung – Anmeldemaske
+    Verknüpft mit: LoginController.java
+-->
+
+<!-- StackPane: füllt das gesamte Fenster und zentriert den Inhalt -->
+<!-- Unabhängig von der Fenstergröße bleibt der Inhalt immer zentriert -->
 <StackPane xmlns:fx="http://javafx.com/fxml/1"
            xmlns="http://javafx.com/javafx/21"
            fx:controller="com.brh.projekt_plan4sign_2026.controller.LoginController"
            style="-fx-background-color: #f4f4f4;">
 
+    <!-- VBox: vertikale Anordnung der Login-Elemente -->
+    <!-- fillWidth="false" → Elemente behalten ihre feste Breite -->
     <VBox alignment="CENTER" focusTraversable="true"
           spacing="15"
           fillWidth="false"
           prefWidth="400.0"
           prefHeight="350.0">
 
+        <!-- Innenabstand: Abstand vom Fensterrand -->
         <padding>
             <Insets bottom="60" left="80" right="80" top="60"/>
         </padding>
 
-        <!-- Logo -->
+        <!-- Projektlogo: wird aus dem resources-Ordner geladen -->
+        <!-- @ bedeutet: relativer Pfad zum FXML-Ordner -->
         <ImageView fitHeight="200.0" fitWidth="200.0" preserveRatio="true">
             <image>
                 <Image url="@Plan4Sign_Logo.png"/>
             </image>
         </ImageView>
 
-        <!-- Benutzername -->
+        <!-- Eingabefeld: Benutzername -->
+        <!-- fx:id verknüpft mit usernameField im LoginController -->
         <TextField fx:id="usernameField"
                    promptText="Benutzername"
                    prefWidth="280"/>
 
-        <!-- Passwort -->
+        <!-- Eingabefeld: Passwort (verdeckte Eingabe) -->
+        <!-- fx:id verknüpft mit passwordField im LoginController -->
         <PasswordField fx:id="passwordField"
                        promptText="Passwort"
                        prefWidth="280"/>
 
-        <!-- Fehlermeldung -->
+        <!-- Fehlermeldung: wird bei falschem Login sichtbar -->
+        <!-- Standardmäßig leer, wird vom Controller befüllt -->
         <Label fx:id="errorLabel"
                style="-fx-text-fill: red; -fx-font-size: 12px;"
                text=""/>
 
-        <!-- Login-Button -->
+        <!-- Anmelden-Button: ruft handleLogin() im Controller auf -->
         <Button onAction="#handleLogin"
                 prefWidth="280"
                 style="-fx-background-color: #2c6fad; -fx-text-fill: white; -fx-font-size: 14px;"

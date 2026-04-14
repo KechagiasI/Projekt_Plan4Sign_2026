@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.geometry.Insets?>
+
+<!--
+    TeilnehmerView.fxml
+    Ansicht für die Rolle: TEILNEHMER
+    Verknüpft mit: TeilnehmerController.java
+-->
+
+<!-- Hauptlayout: vertikale Anordnung aller Elemente -->
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.brh.projekt_plan4sign_2026.controller.TeilnehmerController"
       alignment="CENTER"
@@ -11,27 +18,37 @@
       prefHeight="600"
       VBox.vgrow="ALWAYS">
 
+    <!-- Innenabstand: Abstand vom Fensterrand -->
     <padding>
         <Insets top="20" right="30" bottom="20" left="30"/>
     </padding>
 
+    <!-- Titelzeile -->
     <Label text="Teilnehmer – Stundenplan"
            style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
+    <!-- Begrüßungstext: wird vom Controller dynamisch befüllt -->
+    <!-- z.B. "Willkommen, Ioannis Kechagias" -->
     <Label fx:id="labelWillkommen"
            style="-fx-font-size: 14px; -fx-text-fill: #444;"/>
 
+    <!-- Tabelle: zeigt den Stundenplan der eigenen Klasse -->
+    <!-- Daten werden gefiltert nach KlasseID des Teilnehmers -->
     <TableView fx:id="tableUnterricht"
                VBox.vgrow="ALWAYS">
         <columns>
+            <!-- Spalten werden im Controller mit Daten befüllt -->
             <TableColumn fx:id="colDate"        text="Datum"       prefWidth="110"/>
             <TableColumn fx:id="colStart"       text="Start"       prefWidth="80"/>
             <TableColumn fx:id="colEnd"         text="Ende"        prefWidth="80"/>
+            <!-- Fach: zeigt den Namen des Unterrichtsfachs -->
             <TableColumn fx:id="colFach"        text="Fach"        prefWidth="200"/>
+            <!-- Dolmetscher: zeigt den zugewiesenen Dolmetscher oder "kein" -->
             <TableColumn fx:id="colDolmetscher" text="Dolmetscher" prefWidth="220"/>
         </columns>
     </TableView>
 
+    <!-- Abmelden: ruft handleLogout() auf → zurück zur LoginView -->
     <Button text="Abmelden" onAction="#handleLogout"/>
 
 </VBox>

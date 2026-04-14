@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-
 <?import javafx.geometry.Insets?>
+
+<!--
+    AdminView.fxml
+    Ansicht für die Rolle: ADMIN
+    Verknüpft mit: AdminController.java
+-->
+
+<!-- Hauptlayout: vertikale Anordnung aller Elemente -->
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.brh.projekt_plan4sign_2026.controller.AdminController"
       alignment="CENTER"
@@ -11,16 +18,21 @@
       prefHeight="600"
       VBox.vgrow="ALWAYS">
 
+    <!-- Innenabstand: Abstand vom Fensterrand -->
     <padding>
         <Insets top="20" right="30" bottom="20" left="30"/>
     </padding>
 
+    <!-- Titelzeile -->
     <Label text="Administrator – Hauptmenü"
            style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
 
+    <!-- Tabelle: zeigt alle Unterrichtseinheiten aus der Datenbank -->
+    <!-- VBox.vgrow="ALWAYS" → Tabelle füllt den verfügbaren Platz -->
     <TableView fx:id="tableUnterricht"
                VBox.vgrow="ALWAYS">
         <columns>
+            <!-- Spalten werden im Controller mit Daten befüllt -->
             <TableColumn fx:id="colDate"        text="Datum"       prefWidth="100"/>
             <TableColumn fx:id="colStart"       text="Start"       prefWidth="80"/>
             <TableColumn fx:id="colEnd"         text="Ende"        prefWidth="80"/>
@@ -31,11 +43,16 @@
         </columns>
     </TableView>
 
+    <!-- Aktionsleiste: Zuweisung und Abmelden -->
     <HBox spacing="10" alignment="CENTER">
+        <!-- Auswahlliste: wird mit allen Dolmetschern aus der DB befüllt -->
         <ComboBox fx:id="comboDolmetscher" promptText="Dolmetscher auswählen"/>
-        <Button text="Zuweisen" onAction="#handleAssign"/>
+        <!-- Zuweisung: ruft handleAssign() im Controller auf -->
+        <Button text="Zuweisen"  onAction="#handleAssign"/>
+        <!-- Entfernen: ruft handleRemove() im Controller auf -->
         <Button text="Entfernen" onAction="#handleRemove"/>
-        <Button text="Abmelden" onAction="#handleLogout"/>
+        <!-- Abmelden: ruft handleLogout() auf → zurück zur LoginView -->
+        <Button text="Abmelden"  onAction="#handleLogout"/>
     </HBox>
 
 </VBox>
