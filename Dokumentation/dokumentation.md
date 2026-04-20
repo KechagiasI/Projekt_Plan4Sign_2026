@@ -1141,5 +1141,80 @@ Add logout button, conflict check, remove dolmetscher, responsive layout, logo a
  
 ---
 
+### 5.6 Erstellung eines ausführbaren JAR (Fat JAR)
+
+Um die Anwendung ohne IntelliJ IDEA starten zu können, wurde ein
+ausführbares Fat JAR erstellt. Ein Fat JAR enthält alle benötigten
+Bibliotheken (JavaFX, MySQL Connector, jBCrypt) in einer einzigen Datei.
+
+#### 5.6.1 Konfiguration: maven-shade-plugin
+
+Das `maven-shade-plugin` wurde in der `pom.xml` ergänzt:
+
+```xml
+<!-- Fat JAR – enthält alle Bibliotheken -->
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-shade-plugin</artifactId>
+    <version>3.5.0</version>
+    <executions>
+        <execution>
+            <phase>package</phase>
+            <goals>
+                <goal>shade</goal>
+            </goals>
+            <configuration>
+                <transformers>
+                    <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                        <mainClass>com.brh.projekt_plan4sign_2026.Launcher</mainClass>
+                    </transformer>
+                </transformers>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+```
+
+> **Begründung:** Das `maven-shade-plugin` packt alle Abhängigkeiten
+> in eine einzige JAR-Datei. Die `mainClass` definiert den Einstiegspunkt
+> der Anwendung beim Start.
+
+#### 5.6.2 Build-Vorgang
+
+Das Fat JAR wird durch folgenden Maven-Befehl erstellt:
+
+```
+Maven Panel → Lifecycle → package
+```
+
+Das fertige JAR befindet sich unter:
+
+```
+target\Projekt_Plan4Sign_2026-1.0-SNAPSHOT.jar
+```
+
+#### 5.6.3 Starten der Anwendung
+
+Die Anwendung kann direkt über das Terminal gestartet werden:
+
+```bash
+java -jar Projekt_Plan4Sign_2026-1.0-SNAPSHOT.jar
+```
+
+Für einen einfacheren Start wurde eine `Plan4Sign.bat` Datei
+im gleichen Verzeichnis erstellt:
+
+```batch
+java -jar Projekt_Plan4Sign_2026-1.0-SNAPSHOT.jar
+```
+
+Durch Doppelklick auf `Plan4Sign.bat` startet die Anwendung
+ohne IntelliJ IDEA.
+
+> **Voraussetzung:** Java 21 muss auf dem Zielrechner installiert sein
+> und die MySQL-Datenbank muss über WSL auf Port 3324 erreichbar sein.
+ 
+---
+
 ### Status
 #### Woche 5: abgeschlossen 
