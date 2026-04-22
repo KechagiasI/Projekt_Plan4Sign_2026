@@ -9,18 +9,18 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * UnterrichtDAO.java – Datenzugriffsklasse für die Tabelle "Unterricht"
- * Kapselt alle Datenbankoperationen für Unterrichtseinheiten
- *
- * Methoden:
- * - getAllWithDetails()              → Alle Einheiten mit JOIN-Daten (Admin)
- * - getWithDetailsByDolmetscher()   → Gefiltert nach Dolmetscher (DolmetscherView)
- * - getWithDetailsByKlasse()        → Gefiltert nach Klasse (TeilnehmerView)
- * - assignDolmetscher()             → Dolmetscher zuweisen
- * - removeDolmetscher()             → Zuweisung aufheben (NULL setzen)
- * - hasConflict()                   → Zeitkonflikt prüfen
- */
+
+// UnterrichtDAO.java – Datenzugriffsklasse für die Tabelle "Unterricht"
+// Kapselt alle Datenbankoperationen für Unterrichtseinheiten
+//
+// Methoden:
+// - getAllWithDetails()              → Alle Einheiten mit JOIN-Daten (Admin)
+// - getWithDetailsByDolmetscher()   → Gefiltert nach Dolmetscher (DolmetscherView)
+// - getWithDetailsByKlasse()        → Gefiltert nach Klasse (TeilnehmerView)
+// - assignDolmetscher()             → Dolmetscher zuweisen
+// - removeDolmetscher()             → Zuweisung aufheben (NULL setzen)
+// - hasConflict()                   → Zeitkonflikt prüfen
+
 public class UnterrichtDAO {
 
     /**

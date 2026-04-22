@@ -23,15 +23,15 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-/**
- * LoginController.java – Controller für LoginView.fxml
- * Verwaltet die Anmeldemaske und prüft die Zugangsdaten
- *
- * Ablauf:
- * 1. initialize()  → Fokus entfernen damit promptText sichtbar ist
- * 2. handleLogin() → Eingaben prüfen, BCrypt-Vergleich, Rolle bestimmen
- * 3. navigateTo()  → Rollenbasierte Weiterleitung + Dependency Injection
- */
+
+// LoginController.java – Controller für LoginView.fxml
+// Verwaltet die Anmeldemaske und prüft die Zugangsdaten
+//
+// Ablauf:
+// 1. initialize()  → Fokus entfernen damit promptText sichtbar ist
+// 2. handleLogin() → Eingaben prüfen, BCrypt-Vergleich, Rolle bestimmen
+// 3. navigateTo()  → Rollenbasierte Weiterleitung + Dependency Injection
+
 public class LoginController implements Initializable {
 
     // ===== FXML-Verbindungen (verknüpft mit LoginView.fxml) =====
@@ -43,11 +43,11 @@ public class LoginController implements Initializable {
     // UserDAO: holt Benutzer aus der DB für den Login-Vergleich
     private final UserDAO userDAO = new UserDAO();
 
-    /**
-     * Wird automatisch von JavaFX beim Laden der View aufgerufen
-     * Entfernt den Fokus vom usernameField damit promptText "Benutzername" sichtbar ist
-     * Platform.runLater() → wird nach dem vollständigen Laden der UI ausgeführt
-     */
+
+//     Wird automatisch von JavaFX beim Laden der View aufgerufen
+//     Entfernt den Fokus vom usernameField damit promptText "Benutzername" sichtbar ist
+//     Platform.runLater() → wird nach dem vollständigen Laden der UI ausgeführt
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Fokus auf Parent-Container setzen → kein Feld ist vorausgewählt
