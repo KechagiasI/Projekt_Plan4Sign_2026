@@ -1,4 +1,4 @@
-# Projekt_DoIT
+# Projekt
 **Planungs- und Organisationssoftware für Dolmetschereinsätze im schulischen Umfeld**
 
 ---
